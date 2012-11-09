@@ -129,7 +129,7 @@
         try {
 	    query = query.replace(/\s/g, '\+');
 //http://kino-dom.tv/index.php?do=search&subaction=search&search_start=1&full_search=1&story=naruto&titleonly=3&searchuser=&replyless=0&replylimit=0&searchdate=0&beforeafter=after&sortby=date&resorder=desc&result_num=20&result_from=1&showposts=1&catlist%5B%5D=0	    
-	    var url = '/index.php?do=search&subaction=search&search_start=1&full_search=1&story='+query+'&titleonly=3&searchuser=&replyless=0&replylimit=0&searchdate=0&beforeafter=after&sortby=date&resorder=desc&result_num=20&result_from=1&showposts=1&catlist%5B%5D=0'
+    	    var url = '/index.php?do=search&beforeafter=after&catlist%5B%5D=0&do=search&full_search=1&replyless=0&replylimit=0&resorder=desc&result_from=1&search_start=1&searchdate=0&searchuser=&showposts=1&sortby=date&story='+query+'&subaction=search&titleonly=3'
 	    search(page, url);
 	} catch (err) {
 	    showtime.trace("Searcher for Kino-Dom has Error:" + err)
@@ -235,7 +235,7 @@ trace("item:"+i+showtime.JSONEncode(item));
     function search(page, url) {
 	var html = showtime.httpGet(BASE_URL + url).toString();
 	html = win2unicode(html);
-	html = getValue(html,'<span class="sresult">',"</div><div id=");
+//	html = getValue(html,'<span class="sresult">',"</div><div id=");
 	var items = html.split('<span class="ntitle');
 
 	page.entries = items.length;
