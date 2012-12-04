@@ -1,0 +1,11 @@
+{
+    "description": "Supported websites:\n www.video.az\n",
+    "author": "Buksa",
+    "title": "video.az",
+    "version": "0.1",
+    "file": "video.az.js",
+    "showtimeVersion": "4.1",
+    "type": "javascript",    
+    "id": "videoaz",
+    "icon": "images/logo.png"
+}
