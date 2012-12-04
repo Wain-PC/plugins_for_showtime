@@ -153,7 +153,7 @@
 	    cat = cat.split('<br />');
 
 	for (var i in cat) {
-            var match = /<a href="(\/.*)" t.*>(.*?)<\/a>/g.exec(cat[i]);
+	    var match = /<a href="(\/.*?)".*>(.*?)<\//.exec(cat[i]);
             if (match)
 		page.appendItem(PREFIX + ":index:" + match[1], "video", {
 		    title: new showtime.RichText(match[2]),
@@ -183,7 +183,7 @@
 		if (url_title && cover) {
 		    var item = {
 		        url: url_title[1],
-		        title: url_title[2].replace("смотреть онлайн",''),
+		        title: url_title[2].replace(/(?:о|О)нлайн/g,"").replace(/(?:С|с)мотреть/g,""),
 		        icon: cover
 		 //       description: desc[1]
 		    };

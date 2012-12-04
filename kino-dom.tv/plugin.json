@@ -1,1 +1,12 @@
-{"description": "Supported websites:\n www.kino-dom.tv\n", "author": "Buksa", "title": "www.kino-dom.tv", "version": "0.2", "file": "kino-dom.tv.js", "showtimeVersion": "3.3.228", "type": "javascript", "id": "kino-dom", "icon": "images/logo.png"}
+{
+   "description":"Watch TVSHOW online at :\n www.kino-dom.tv\n",
+   "synopsis":"Russian website were you can watch TV Shows",
+   "author":"Buksa",
+   "title":"www.kino-dom.tv",
+   "version":"0.3",
+   "file":"kino-dom.tv.js",
+   "showtimeVersion":"4.1",
+   "type":"javascript",
+   "id":"kino-dom",
+   "icon":"images/logo.png"
+}

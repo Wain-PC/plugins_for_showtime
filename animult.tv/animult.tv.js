@@ -162,7 +162,7 @@
 		if (url_title && cover) {
 		    var item = {
 		        url: url_title[1],
-		        title: url_title[2].replace("смотреть онлайн",''),
+		        title: url_title[2].replace(/(?:о|О)нлайн/g,"").replace(/(?:С|с)мотреть/g,""),
 		        icon: cover[1]
 		 //     description: desc[1]
 		    };

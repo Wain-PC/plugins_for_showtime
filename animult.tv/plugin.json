@@ -1,1 +1,12 @@
-{"description": "Supported websites:\n www.animult.tv\n", "author": "Buksa", "title": "www.animult.tv", "version": "0.1", "file": "animult.tv.js", "showtimeVersion": "3.3.228", "type": "javascript", "id": "animult", "icon": "images/logo.png"}
+{
+   "description":"Supported websites:\n www.animult.tv\n",
+   "synopsis":"Russian website were you can watch Anime and Cartoon Online",
+   "author":"Buksa",
+   "title":"www.animult.tv",
+   "version":"0.2",
+   "file":"animult.tv.js",
+   "showtimeVersion":"4.1",
+   "type":"javascript",
+   "id":"animult",
+   "icon":"images/logo.png"
+}
