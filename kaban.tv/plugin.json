@@ -1,10 +1,14 @@
 {
-	"type": "javascript",
 	"id": "kaban.tv",
-	"file": "kaban.tv.js",
-	"version": "0.1",
+	"version": "1.0",
+	"type": "javascript",
 	"author": "Buksa",
+	"showtimeVersion": "4.1",
 	"title": "Kaban.tv",
-	"icon": "logo.png",
-	"description": "<p>Russian Tv Online ТВ Онлайн с Кабаном – твои неограниченные возможности! <p>"
+	"synopsis": "a few tv channels in Russian",
+	"description": "<p>Russian Tv Online ТВ Онлайн с Кабаном – твои неограниченные возможности! <p>",
+	"homepage": "https://github.com/buksa",
+	"category": "TV",
+	"icon": "img/logo.png",
+	"file": "kaban.tv.js"
 }
