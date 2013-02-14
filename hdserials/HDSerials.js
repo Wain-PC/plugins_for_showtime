@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.1 API
+//ver 0.2 API
 (function (plugin) {
 
     plugin.addHTTPAuth("http://HDSerials.galanov.net.*", function (authreq) {
@@ -57,14 +57,45 @@
             'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
 
+        page.appendItem(PREFIX + ':news:/backend/model.php?id=news', 'directory', {
+            title: 'Сериалы HD новинки',
+            icon: logo
+        });
+
+        page.appendItem(PREFIX + ':sub-categories:0:Последние 200 обновлений на сайте:200', 'directory', {
+            title: 'Последние 200 обновлений на сайте',
+            icon: logo
+        });
+
+
+
         for (i in JSON.data) {
             page.appendItem(PREFIX + ':' + JSON.id + ':' + JSON.data[i].id + ':' + escape(JSON.data[i].title_ru), 'directory', {
-                title: new showtime.RichText(unescape(JSON.data[i].title_ru) + blueStr(JSON.data[i].video_count)),
+                title: new showtime.RichText(JSON.data[i].title_ru + blueStr(JSON.data[i].video_count)),
                 icon: logo
             });
         };
 
     };
+
+    plugin.addURI(PREFIX + ":news:(.*)", function (page, url) {
+        var counter = 0;
+        setPageHeader(page, 'Сериалы HD новинки');
+
+        var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + url, null, {
+            'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+        }));
+        for (var i in JSON.data) {
+            page.appendItem(PREFIX + ':filter-videos:' + JSON.data[i].video_id + ':' + escape(JSON.data[i].video_title_ru + (JSON.data[i].video_season ? " " + JSON.data[i].video_season : "")), "video", {
+                title: new showtime.RichText(JSON.data[i].video_title_ru + (JSON.data[i].video_title_en ? " / " + JSON.data[i].video_title_en : "") + (JSON.data[i].video_season ? " " + JSON.data[i].video_season : "")),
+                description: new showtime.RichText(JSON.data[i].date + ' ' + JSON.data[i].title + '\n' + JSON.data[i].video_title_ru + (JSON.data[i].video_title_en ? " / " + JSON.data[i].video_title_en : "") + (JSON.data[i].video_season ? " " + JSON.data[i].video_season : "")),
+                icon: JSON.data[i].video_image_file
+            });
+            counter++
+        };
+    });
+
+
 
     // Shows genres of the category jump to sub-categories
     plugin.addURI(PREFIX + ":common-categories:(.*):(.*)", function (page, id, title) {
@@ -75,7 +106,7 @@
 
         for (i in JSON.data) {
             if (JSON.data[i].video_count !== '0') page.appendItem(PREFIX + ':' + JSON.id + ':' + JSON.data[i].id + ':' + escape(JSON.data[i].title_ru) + ':' + JSON.data[i].video_count, 'directory', {
-                title: new showtime.RichText(unescape(JSON.data[i].title_ru) + blueStr(JSON.data[i].video_count)),
+                title: new showtime.RichText(JSON.data[i].title_ru + blueStr(JSON.data[i].video_count)),
                 icon: logo
             })
         };
@@ -88,7 +119,6 @@
         var anchor = 0;
         setPageHeader(page, unescape(title));
 
-        //HDSerials.galanov.net/backend/model.php?id=filter-videos&category=36&fresh=1&start=1&limit=15
 
         function loader() {
             if (parseInt(video_count) <= counter) return false
@@ -120,7 +150,7 @@
 
     plugin.addURI(PREFIX + ":filter-videos:(.*):(.*)", function (page, id, title) {
         setPageHeader(page, unescape(title));
-        //http://HDSerials.galanov.net/backend/model.php?id=video&video=2070
+
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php?id=video&video=" + id));
 
         var genres = "";
@@ -163,14 +193,14 @@
 
     // Play links
     plugin.addURI(PREFIX + ":video:(.*):(.*)", function (page, url, title) {
-        url = get_video_link(unescape(url));
+        var video = get_video_link(unescape(url));
 
         page.type = "video";
         page.source = "videoparams:" + showtime.JSONEncode({
             title: unescape(title),
             canonicalUrl: PREFIX + ":video:" + url + ":" + title,
             sources: [{
-                url: unescape(url)
+                url: get_video_link(unescape(url))
             }]
         });
         page.loading = false;
@@ -215,7 +245,7 @@
     plugin.addURI(PREFIX + ":start", startPage);
 
     plugin.addSearcher("HDSerials.ru", logo,
-    //http://HDSerials.galanov.net/backend/model.php?id=filter-videos&category=0&search=happy&start=0&limit=10
+
     function (page, query) {
         try {
             var offset = 0;
