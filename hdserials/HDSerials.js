@@ -19,12 +19,12 @@
 //ver 0.2 API
 (function (plugin) {
 
-    plugin.addHTTPAuth("http://HDSerials.galanov.net.*", function (authreq) {
+    plugin.addHTTPAuth("http://hdserials.galanov.net.*", function (authreq) {
         authreq.setHeader('User-Agent', 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)');
     });
 
     var PREFIX = 'HDSerials';
-    var BASE_URL = 'http://HDSerials.galanov.net';
+    var BASE_URL = 'http://hdserials.galanov.net';
     var logo = plugin.path + "img/logo.png"
 
         function trim(s) {
@@ -151,7 +151,9 @@
     plugin.addURI(PREFIX + ":filter-videos:(.*):(.*)", function (page, id, title) {
         setPageHeader(page, unescape(title));
 
-        var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php?id=video&video=" + id));
+        var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php?id=video&video=" + id, null, {
+            'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+        }));
 
         var genres = "";
         for (var i in JSON.data.genres) {
