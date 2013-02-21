@@ -1,0 +1,14 @@
+
+PLUGINS= \
+	animult.tv.zip \
+	kaban.tv.zip \
+	kino-dom.tv.zip \
+	video.az.zip \
+        hdserials.zip
+
+%.zip:
+	@echo "Bundle plugin '$*'"
+	@rm -f ./plugins/$*.zip
+	@cd $*; zip -r9 ../plugins/$*.zip * -x *.js\~ > /dev/null; cd ..
+
+all: ${PLUGINS}
