@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.2 API
+//ver 0.4 API
 (function (plugin) {
 
     plugin.addHTTPAuth("http://hdserials.galanov.net.*", function (authreq) {
@@ -169,12 +169,12 @@
             if (i < JSON.data.actors.length - 1) actors += ', ';
         }
 
-        var directors = "";
-        for (var i in JSON.data.directors) {
-            var entry = JSON.data.directors[i];
-            actors += entry.title_ru;
-            if (i < JSON.data.directors.length - 1) directors += ', ';
-        }
+        //var directors = "";
+        //for (var i in JSON.data.directors) {
+        //    var entry = JSON.data.directors[i];
+        //    actors += entry.title_ru;
+        //    if (i < JSON.data.directors.length - 1) directors += ', ';
+        //}
 
 
 
@@ -197,23 +197,35 @@
     plugin.addURI(PREFIX + ":video:(.*):(.*)", function (page, url, title) {
         var video = get_video_link(unescape(url));
 
-        page.type = "video";
-        page.source = "videoparams:" + showtime.JSONEncode({
-            title: unescape(title),
-            canonicalUrl: PREFIX + ":video:" + url + ":" + title,
-            sources: [{
-                url: get_video_link(unescape(url))
-            }]
-        });
+        if (showtime.probe(video).result == 0) {
+            page.type = "video";
+            page.source = "videoparams:" + showtime.JSONEncode({
+                title: unescape(title),
+                canonicalUrl: PREFIX + ":video:" + url + ":" + title,
+                sources: [{
+                    url: video
+                }]
+            });
+
+        } else {
+            showtime.notify(video, 3);
+       // showtime.message(video+"\n"+ "Go Back",1,0)
+        }
+        page.metadata.logo = logo;
         page.loading = false;
     })
+
 
     function get_video_link(url) {
         var result_url = url;
         showtime.trace('php Link for page: ' + url);
         if ((url.indexOf("vk.com") > 0) || (url.indexOf("/vkontakte.php?video") > 0) || (url.indexOf("vkontakte.ru/video_ext.php") > 0) || (url.indexOf("/vkontakte/vk_kinohranilishe.php?id=") > 0)) {
             var v = showtime.httpGet(url).toString();
-            var video_host = v.match("var video_host = '(.+?)';")[1];
+            if (v.match('This video has been removed from public access.')) {
+                result_url = v.match('This video has been removed from public access.')
+                return result_url
+            }
+            var video_host = v.match("var video_host = '(.+?)';")[1]
             var video_uid = v.match("var video_uid = '(.*)'")[1];
             var video_vtag = v.match("var video_vtag = '(.*)'")[1];
             var video_no_flv = v.match("video_no_flv =(.*);")[1];
@@ -240,8 +252,16 @@
                 result_url = "http://" + video_host + "/assets/videos/" + video_vtag + vkid + "." + fname;
             }
         }
+        else {
+            result_url = url.replace(".mp4",".mp4/index.m3u8")
+        }
         showtime.trace("Video Link: " + result_url);
         return result_url;
+    }
+
+    function debug(message) {
+        showtime.trace(message, plugin.getDescriptor().id);
+        showtime.print(message)
     }
 
     plugin.addURI(PREFIX + ":start", startPage);
@@ -255,11 +275,13 @@
             var anchor = 0;
             setPageHeader(page, query);
 
-            function loader() {
+            var loader = function loader() {
                 if (anchor) return false
 
-                var params = '/backend/model.php?id=filter-videos&category=0&search=' + query + '&start=' + offset + '&limit=15'
+                var params = '/backend/model.php?id=filter-videos&category=0&search=' + showtime.paramEscape(query) + '&start=' + offset + '&limit=15'
+
                 var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + params));
+
 
                 for (var i in JSON.data) {
                     page.appendItem(PREFIX + ':' + JSON.id + ':' + JSON.data[i].id + ':' + escape(JSON.data[i].title_ru + (JSON.data[i].season ? " " + showtime.entityDecode(JSON.data[i].season) : "")), "video", {
