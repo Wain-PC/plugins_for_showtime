@@ -16,12 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.4 API
+//ver 0.6.1 API
 (function (plugin) {
-
-    plugin.addHTTPAuth("http://hdserials.galanov.net.*", function (authreq) {
-        authreq.setHeader('User-Agent', 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)');
-    });
 
     var PREFIX = 'HDSerials';
     var BASE_URL = 'http://hdserials.galanov.net';
@@ -54,7 +50,7 @@
         setPageHeader(page, 'фильмы, сериалы и мультфильмы в HD.');
 
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + '/backend/model.php?id=common-categories', null, {
-            'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
 
         page.appendItem(PREFIX + ':news:/backend/model.php?id=news', 'directory', {
@@ -83,7 +79,7 @@
         setPageHeader(page, 'Сериалы HD новинки');
 
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + url, null, {
-            'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
         for (var i in JSON.data) {
             page.appendItem(PREFIX + ':filter-videos:' + JSON.data[i].video_id + ':' + escape(JSON.data[i].video_title_ru + (JSON.data[i].video_season ? " " + JSON.data[i].video_season : "")), "video", {
@@ -100,10 +96,9 @@
     // Shows genres of the category jump to sub-categories
     plugin.addURI(PREFIX + ":common-categories:(.*):(.*)", function (page, id, title) {
         setPageHeader(page, unescape(title));
-        var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + '/backend/model.php?id=sub-categories&parent=' + id + '&start=1', null, {
-            'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+        var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + '/backend/model.php', {id : 'sub-categories' , parent : id , start : '1'}, {
+            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
-
         for (i in JSON.data) {
             if (JSON.data[i].video_count !== '0') page.appendItem(PREFIX + ':' + JSON.id + ':' + JSON.data[i].id + ':' + escape(JSON.data[i].title_ru) + ':' + JSON.data[i].video_count, 'directory', {
                 title: new showtime.RichText(JSON.data[i].title_ru + blueStr(JSON.data[i].video_count)),
@@ -124,7 +119,7 @@
             if (parseInt(video_count) <= counter) return false
             var params = '/backend/model.php?id=filter-videos&category=' + category_id + '&fresh=1&start=' + offset + '&limit=20'
             var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + params, null, {
-                'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+                'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
             }));
 
 
@@ -152,7 +147,7 @@
         setPageHeader(page, unescape(title));
 
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php?id=video&video=" + id, null, {
-            'User-Agent': 'Android;HD Serials v.1.4.0.draft;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
 
         var genres = "";
@@ -196,6 +191,7 @@
     // Play links
     plugin.addURI(PREFIX + ":video:(.*):(.*)", function (page, url, title) {
         var video = get_video_link(unescape(url));
+        
 
         if (showtime.probe(video).result == 0) {
             page.type = "video";
@@ -252,8 +248,12 @@
                 result_url = "http://" + video_host + "/assets/videos/" + video_vtag + vkid + "." + fname;
             }
         }
-        else {
-            result_url = url.replace(".mp4",".mp4/index.m3u8")
+        else { 
+			v = url.match("video\/(.*?)\/iframe")[1]
+
+			var JSON = showtime.JSONDecode(showtime.httpPost('http://54.228.189.108/sessions/create', {video_token: v}));
+                        showtime.print(showtime.httpPost('http://54.228.189.108/sessions/create', {video_token: v}))
+            result_url = 'http://moonwalk.cc'+JSON.manifest_m3u8
         }
         showtime.trace("Video Link: " + result_url);
         return result_url;
@@ -277,10 +277,10 @@
 
             var loader = function loader() {
                 if (anchor) return false
-
-                var params = '/backend/model.php?id=filter-videos&category=0&search=' + showtime.paramEscape(query) + '&start=' + offset + '&limit=15'
-
-                var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + params));
+                
+                var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php", {id: 'filter-videos', category: '0', search: query, start: offset, limit: '15'}, 
+					{'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'}
+					));
 
 
                 for (var i in JSON.data) {
