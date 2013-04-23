@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.6.1 API
+//ver 0.6.2 API
 (function (plugin) {
 
     var PREFIX = 'HDSerials';
@@ -253,7 +253,7 @@
 
 			var JSON = showtime.JSONDecode(showtime.httpPost('http://54.228.189.108/sessions/create', {video_token: v}));
                         showtime.print(showtime.httpPost('http://54.228.189.108/sessions/create', {video_token: v}))
-            result_url = 'http://moonwalk.cc'+JSON.manifest_m3u8
+            result_url = 'hls:http://moonwalk.cc'+JSON.manifest_m3u8
         }
         showtime.trace("Video Link: " + result_url);
         return result_url;
