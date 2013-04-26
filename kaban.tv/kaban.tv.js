@@ -16,11 +16,26 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+<<<<<<< HEAD
 
 (function(plugin) {
     var PREFIX = "Kaban.tv";
     var BASE_URL = "http://kaban.tv";
     var service = plugin.createService("Kaban.tv", PREFIX + ":start", "video", true, plugin.path + "img/logo.png");
+=======
+// Version 1.3
+//
+(function (plugin) {
+    var PREFIX = "Kaban.tv";
+    var BASE_URL = "http://kaban.tv";
+    var service = plugin.createService("Kaban.tv", PREFIX + ":start", "video", true, plugin.path + "img/logo.png");
+
+    var jsonCurTime = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/current-time"));
+
+    this.date = jsonCurTime.currentTime.date;
+    this.CDL = jsonCurTime.currentTime.millis;
+    showtime.print(date + CDL)
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
 
     function startPage(page) {
         var channels = [];
@@ -29,6 +44,7 @@
         page.contents = "items";
         page.loading = false;
 
+<<<<<<< HEAD
         channels = getChannels(BASE_URL);
 
         show_channels(page, channels);
@@ -47,6 +63,64 @@
 
 
 
+=======
+
+
+        channels = getChannels(BASE_URL);
+
+        ch_list(page, channels);
+
+
+        page.metadata.logo = plugin.path + "img/logo.png";
+        page.metadata.title = "Kaban.tv : Список Каналов";
+    }
+
+
+
+
+    plugin.addURI(PREFIX + ":play:(.*)", function (page, url) {
+        page.type = "video";
+
+        var stream = getStream(url);
+        showtime.trace('Video Playback: Reading ' + stream);
+
+        if (showtime.probe(stream).result == 0) {
+
+            page.source = "videoparams:" + showtime.JSONEncode({
+                canonicalUrl: PREFIX + ":play:" + url,
+                sources: [{
+                    url: stream
+                }]
+            });
+        } else page.error("Линк не проигрывается :(");
+        page.loading = false;
+    });
+
+
+    plugin.addURI(PREFIX + ":channel:(.*):(.*):(.*)", function (page, link, date, title) {
+
+        page.entries = 0;
+        page.type = "directory";
+
+
+
+        var url = (BASE_URL + '/tv/' + link.replace('tv5kanal', '5kanal') + '/' + date);
+        var v = getDayDifference(date, -1).date;
+        page.appendItem(PREFIX + ":channel:" + link + ':' + v + ':' + title, "video", {
+            title: new showtime.RichText('Архив Канала за' + '<font color="6699CC"> [' + v + '] </font>'),
+            icon: plugin.path + "img/" + link + ".png",
+            description: new showtime.RichText('Канал Архив за <font color="6699CC">[' + v + '] </font>')
+        });
+
+        var json = showtime.JSONDecode(showtime.httpGet(url).toString());
+
+        shTvPr(page, json, CDL)
+
+
+        page.metadata.title = title + ": Программа Канала за " + json[0].tvChannelItemUI.dateName;
+
+        page.loading = false;
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
     });
 
     function getChannels(url) {
@@ -58,12 +132,21 @@
 
         for (var i = 1; i < split.length; i++) {
 
+<<<<<<< HEAD
             var entry = /<a class="(.+?)" href="(.+?)"><span>(.*)<\/span>/.exec(split[i]);
 
             if (entry) var channel = {
                 url: entry[2],
                 title: entry[3],
                 icon: plugin.path + "img/" + entry[1] + ".png"
+=======
+            var m = /<a class="(.+?)" href="(.+?)"><span>(.*)<\/span>/.exec(split[i]);
+
+            if (m) var channel = {
+                url: m[1],
+                title: m[3],
+                icon: plugin.path + "img/" + m[1] + ".png"
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
             }
             channels.push(channel);
 
@@ -73,10 +156,19 @@
 
     }
 
+<<<<<<< HEAD
     function show_channels(page, channels) {
         for (var i in channels) {
             var channel = channels[i];
             if (channel.url) page.appendItem(PREFIX + ':play:' + channel.url, 'video', {
+=======
+
+    function ch_list(page, channels) {
+        for (var i in channels) {
+            var channel = channels[i];
+
+            if (channel.url) page.appendItem(PREFIX + ':channel:' + channel.url + ':' + date + ':' + channel.title, 'video', {
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
                 title: new showtime.RichText(channel.title),
                 icon: channel.icon
             });
@@ -84,12 +176,36 @@
     }
 
     function getStream(url) {
+<<<<<<< HEAD
         //rtmp://213.186.127.42:1935/live/rus1.stream swfUrl=http://kaban.tv/uppod.swf pageUrl=http://kaban.tv/rossiya-1-online
         var stream = /file":"([^"]+)/.exec(showtime.httpGet(BASE_URL + url).toString());
         stream = stream[1];
         stream = getValue(stream, 'http://', '/playlist.m3u8')
         stream = 'rtmp://' + stream + ' swfUrl=http://kaban.tv/uppod.swf pageUrl=' + BASE_URL + url;
         return stream
+=======
+        rtmp: //213.186.127.42:1935/live/first.stream  swfUrl=http://kaban.tv/uppod.swf pageUrl=http://kaban.tv/pervii-kanal/player.jsx
+
+        //rtmp://213.186.127.42:1935/live/rus1.stream swfUrl=http://kaban.tv/uppod.swf pageUrl=http://kaban.tv/rossiya-1-online
+        var v = showtime.httpGet(BASE_URL + url).toString();
+
+        var stream = /file":"([^"]+)"/.exec(v);
+        stream = dc(stream[1]);
+        stream = stream.split(" or ")
+
+        if (stream[0].indexOf('tmp:') !== -1) {
+            stream = stream[0]
+            stream = trim(stream) + ' swfUrl=http://kaban.tv/uppod.swf pageUrl=' + BASE_URL + url.replace("/player.jsx", "-online");
+        } else { 
+            for (i in stream) {
+                if (showtime.probe(stream[i]).result == 0) {
+                    stream = (stream[i])
+                    break;
+                }
+            }
+        }
+        return trim(stream)
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
     }
 
 
@@ -107,13 +223,63 @@
 
             return doc.substr(s, e - s);
         }
+<<<<<<< HEAD
+=======
 
         return doc.substr(s);
     }
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
+
+        return doc.substr(s);
+    }
+
+
+<<<<<<< HEAD
+
+    plugin.addURI(PREFIX + ":start", startPage);
+
+
+=======
+    function shpr(page, json, index, CDL) {
+
+        if (json[index].tvChannelItemUI.startTime < CDL && json[index].tvChannelItemUI.endTime <= CDL) {
+            ////Kaban.tv:play:/archive/pervii-kanal/2013-03-07/605993
+            //page.appendItem(PREFIX + ":play:" +"/archive/" + json[index].tvChannelItemUI.channelId + "/" + json[index].tvChannelItemUI.date + "/" + json[index].tvChannelItemUI.id, "video", {
+            //Kaban.tv:play:/archive/player/pervii-kanal/605989.jsx
+            page.appendItem(PREFIX + ":play:" + "/archive/player/" + json[index].tvChannelItemUI.channelId + "/" + json[index].tvChannelItemUI.id + ".jsx", "video", {
+                title: new showtime.RichText('(' + json[index].tvChannelItemUI.startTimeMSK + ') ' + json[index].tvChannelItemUI.name),
+                icon: plugin.path + "img/" + json[index].tvChannelItemUI.channelId + ".png",
+                description: json[index].tvChannelItemUI.description
+            });
+
+        } else if (json[index].tvChannelItemUI.startTime <= CDL && json[index].tvChannelItemUI.endTime > CDL) {
+            page.appendItem(PREFIX + ":play:" + "/" + json[index].tvChannelItemUI.channelId + "/player.jsx", "video", {
+                title: new showtime.RichText('<font color="92CD00">Сейчас! (</font>' + json[index].tvChannelItemUI.startTimeMSK + ')' + json[index].tvChannelItemUI.name),
+                icon: plugin.path + "img/" + json[index].tvChannelItemUI.channelId + ".png",
+                description: json[index].tvChannelItemUI.description
+            });
+
+        } else {
+            page.appendItem(PREFIX + ":play:" + "/" + json[index].tvChannelItemUI.channelId + "/player.jsx", "video", {
+                title: new showtime.RichText('<font color="b3b3b3">(' + json[index].tvChannelItemUI.startTimeMSK + ') ' + json[index].tvChannelItemUI.name),
+                icon: plugin.path + "img/" + json[index].tvChannelItemUI.channelId + ".png",
+                description: json[index].tvChannelItemUI.description
+            })
+        }
+    }
+
+    function shTvPr(page, json, CDL) {
+        for (var key = 0; key < json.length; key++) {
+            page.entries++;
+            shpr(page, json, key, CDL)
+        }
+    }
+function dc(st) { var a, b, d, c, e; b = "3UIaVxs8z27WwGBXb94RkJe5g=".split(""); d = "QHo10TdnvilZYfpMyN6DtLmcuj".split(""); a = m("\n", "", st); for(var g = 0;g < b.length;g++) { c = d[g], e = b[g], a = m(c, "___", a), a = m(e, c, a), a = m("___", e, a) } var f; var j, h; d = b = 0; c = ""; g = []; if(a) { a += ""; do { f = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(a.charAt(b++)), j = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(a.charAt(b++)), c = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(a.charAt(b++)), e = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(a.charAt(b++)), h = f << 18 | j << 12 | c << 6 | e, f = h >> 16 & 255, j = h >> 8 & 255, h &= 255, 64 == c ? g[d++] = String.fromCharCode(f) : 64 == e ? g[d++] = String.fromCharCode(f, j) : g[d++] = String.fromCharCode(f, j, h) }while(b < a.length); f = c = g.join("") }else { f = a } a = []; g = e = c = d = b = 0; for(f += "";b < f.length;) { c = f.charCodeAt(b), 128 > c ? (a[d++] = String.fromCharCode(c), b++) : 191 < c && 224 > c ? (e = f.charCodeAt(b + 1), a[d++] = String.fromCharCode((c & 31) << 6 | e & 63), b += 2) : (e = f.charCodeAt(b + 1), g = f.charCodeAt(b + 2), a[d++] = String.fromCharCode((c & 15) << 12 | (e & 63) << 6 | g & 63), b += 3) } a = a.join(""); return unescape(a) } function m(a, b, d) { var c = 0, e = 0, g = "", f = "", j = 0, h = 0; a = [].concat(a); b = [].concat(b); var n = "[object Array]" === Object.prototype.toString.call(b), p = "[object Array]" === Object.prototype.toString.call(d); d = [].concat(d); c = 0; for(j = d.length;c < j;c++) { if("" !== d[c]) { e = 0; for(h = a.length;e < h;e++) { g = d[c] + "", f = n ? void 0 !== b[e] ? b[e] : "" : b[0], d[c] = g.split(a[e]).join(f) } } } return p ? d : d[0] }
 
 
 
     plugin.addURI(PREFIX + ":start", startPage);
 
 
+>>>>>>> parent of 29480f9... Kaban.tv 1.4 live stream fix
 })(this);
