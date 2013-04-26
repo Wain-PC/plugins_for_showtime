@@ -1,6 +1,6 @@
 {
 	"id": "kaban.tv",
-	"version": "1.4",
+	"version": "0.1",
 	"type": "javascript",
 	"author": "Buksa",
 	"showtimeVersion": "4.1",
@@ -9,6 +9,7 @@
 	"description": "<p>Russian Tv Online ТВ Онлайн с Кабаном – твои неограниченные возможности! <p>",
 	"homepage": "https://github.com/buksa",
 	"category": "TV",
+	"downloadURL": "https://github.com/downloads/Buksa/plugins_for_showtime/kaban.tv.zip",
 	"icon": "img/logo.png",
 	"file": "kaban.tv.js"
 }
