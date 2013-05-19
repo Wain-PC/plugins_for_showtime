@@ -1,0 +1,14 @@
+{
+	"id": "vkvideos",
+	"version": "0.1",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3",
+	"title": "VK Videos",
+	"synopsis": "VK Videos: Video service",
+	"description":"<p>VK Videos Showtime plugin </p>",
+	"homepage":"https://github.com/buksa/vkvideos",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "vkvideos.js"
+}
