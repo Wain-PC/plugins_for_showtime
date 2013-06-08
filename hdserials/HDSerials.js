@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.6.2 API
+//ver 0.6.4 API
 (function (plugin) {
 
     var PREFIX = 'HDSerials';
@@ -50,7 +50,7 @@
         setPageHeader(page, 'фильмы, сериалы и мультфильмы в HD.');
 
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + '/backend/model.php?id=common-categories', null, {
-            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.3;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
 
         page.appendItem(PREFIX + ':news:/backend/model.php?id=news', 'directory', {
@@ -79,7 +79,7 @@
         setPageHeader(page, 'Сериалы HD новинки');
 
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + url, null, {
-            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.3;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
         for (var i in JSON.data) {
             page.appendItem(PREFIX + ':filter-videos:' + JSON.data[i].video_id + ':' + escape(JSON.data[i].video_title_ru + (JSON.data[i].video_season ? " " + JSON.data[i].video_season : "")), "video", {
@@ -97,7 +97,7 @@
     plugin.addURI(PREFIX + ":common-categories:(.*):(.*)", function (page, id, title) {
         setPageHeader(page, unescape(title));
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + '/backend/model.php', {id : 'sub-categories' , parent : id , start : '1'}, {
-            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.3;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
         for (i in JSON.data) {
             if (JSON.data[i].video_count !== '0') page.appendItem(PREFIX + ':' + JSON.id + ':' + JSON.data[i].id + ':' + escape(JSON.data[i].title_ru) + ':' + JSON.data[i].video_count, 'directory', {
@@ -119,7 +119,7 @@
             if (parseInt(video_count) <= counter) return false
             var params = '/backend/model.php?id=filter-videos&category=' + category_id + '&fresh=1&start=' + offset + '&limit=20'
             var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + params, null, {
-                'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+                'User-Agent': 'Android;HD Serials v.1.6.3;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
             }));
 
 
@@ -147,7 +147,7 @@
         setPageHeader(page, unescape(title));
 
         var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php?id=video&video=" + id, null, {
-            'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
+            'User-Agent': 'Android;HD Serials v.1.6.3;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'
         }));
 
         var genres = "";
@@ -251,9 +251,8 @@
         else { 
 			v = url.match("video\/(.*?)\/iframe")[1]
 
-			var JSON = showtime.JSONDecode(showtime.httpPost('http://54.228.189.108/sessions/create', {video_token: v}));
-                        showtime.print(showtime.httpPost('http://54.228.189.108/sessions/create', {video_token: v}))
-            result_url = 'hls:http://moonwalk.cc'+JSON.manifest_m3u8
+			var JSON = showtime.JSONDecode(showtime.httpPost('http://moonwalk.cc/sessions/create', {video_token: v}));
+             result_url = 'hls:http://buksa.16mb.com/navix/scrapers/hdserials/index.php?u='+JSON.manifest_m3u8
         }
         showtime.trace("Video Link: " + result_url);
         return result_url;
@@ -279,7 +278,7 @@
                 if (anchor) return false
                 
                 var JSON = showtime.JSONDecode(showtime.httpGet(BASE_URL + "/backend/model.php", {id: 'filter-videos', category: '0', search: query, start: offset, limit: '15'}, 
-					{'User-Agent': 'Android;HD Serials v.1.6.0;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'}
+					{'User-Agent': 'Android;HD Serials v.1.6.3;en-US;motorola DROIDX;SDK 10;v.2.3.3(REL)'}
 					));
 
 
