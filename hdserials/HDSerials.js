@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.6.4 API
+//ver 0.6.5 API
 (function (plugin) {
 
     var PREFIX = 'HDSerials';
@@ -252,7 +252,7 @@
 			v = url.match("video\/(.*?)\/iframe")[1]
 
 			var JSON = showtime.JSONDecode(showtime.httpPost('http://moonwalk.cc/sessions/create', {video_token: v}));
-             result_url = 'hls:http://buksa.16mb.com/navix/scrapers/hdserials/index.php?u='+JSON.manifest_m3u8
+             result_url = 'hls:http://buksa.hostei.com/hdserials/index.php?u='+JSON.manifest_m3u8
         }
         showtime.trace("Video Link: " + result_url);
         return result_url;
