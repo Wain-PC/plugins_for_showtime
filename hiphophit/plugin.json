@@ -1,0 +1,14 @@
+{
+	"id": "HipHopHit",
+	"version": "0.1",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "HipHopHit",
+	"synopsis": "Хип Хоп Хит - это первое национальное хип хоп телевидение.",
+	"description":"<p>HipHopHit Videos Showtime plugin </p>",
+	"homepage":"https://github.com/buksa/HipHopHit",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "HipHopHit.js"
+}
