@@ -1,0 +1,13 @@
+{
+	"id": "ororo",
+	"version": "0.1",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "ororo",
+	"description":"<p>TV Shows for Showtime</p>",
+	"homepage":"https://github.com/Buksa/plugins_for_showtime/ororo",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "ororo.js"
+}
