@@ -40,116 +40,101 @@
     tos += "plugin is not licensed, approved or endorsed by any online resource\n ";
     tos += "proprietary. Do you accept this terms?";
     // Register a service (will appear on home page)
-    var service = plugin.createService("Ororo", PREFIX + "start", "video", true, logo);
+    var service = plugin.createService("Ororo.tv", PREFIX + "start", "video", true, logo);
     //settings
-    var settings = plugin.createSettings("Ororo", logo, "Online Videos");
+    var settings = plugin.createSettings("Ororo.tv", logo, "Online Videos");
     settings.createInfo("info", logo, "Plugin developed by Buksa \n");
     settings.createDivider('Settings:');
-    settings.createBool("tosaccepted", "Accepted TOS (available in opening the plugin):", false, function(v) {
+    settings.createBool("tosaccepted", "Accepted TOS (available in opening the plugin):", false, function (v) {
         service.tosaccepted = v;
+        settings.createBool("thetvdb", "Show more information using thetvdb", false, function (v) {
+            service.thetvdb = v;
+        });
     });
-    settings.createBool("debug", "Debug", false, function(v) {
-        service.debug = v;
-    });
+
     //First level start page
     plugin.addURI(PREFIX + "start", function(page) {
+        var i, v;
         page.metadata.logo = plugin.path + "logo.png";
         page.metadata.title = PREFIX;
-	var v = showtime.httpReq(BASE_URL)
-	
-        plugin.addItemHook({
-            title: "Search in Another Apps",
-            itemtype: "video",
-            handler: function(obj, nav) {
-                var title = obj.metadata.title;
-                title = title.replace(/<.+?>/g, "").replace(/\[.+?\]/g, "");
-                nav.openURL("search:" + title);
-            }
-        });
-	
-
+        v = showtime.httpReq(BASE_URL);
+        if (showtime.currentVersionInt >= 4 * 10000000 + 3 * 100000 + 261) {
+            plugin.addItemHook({
+                title: "Search in Another Apps",
+                itemtype: "video",
+                handler: function (obj, nav) {
+                    var title = obj.metadata.title;
+                    title = title.replace(/<.+?>/g, "").replace(/\[.+?\]/g, "");
+                    nav.openURL("search:" + title);
+                }
+            });
+        }
         if (!service.tosaccepted) if (showtime.message(tos, true, true)) service.tosaccepted = 1;
         else page.error("TOS not accepted. plugin disabled");
-	
-	
-	
-	
-	var items = [];
-	
-	
-    page.metadata.title = new showtime.RichText(PREFIX + (/<title>(.*?)<\/title>/.exec(v)[1]));
-                
-                var re = /<div class='index show'[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
-                var m = re.execAll(v);
-	            
-                for (var i = 0; i < m.length; i++) {
-                
-                var item = page.appendItem(PREFIX + "page:" + m[i][1], "video", {
-                        title: new showtime.RichText(trim(m[i][3])+ ' | ' + trim (m[i][4])),
-                        description: new showtime.RichText(m[i][5]),
-                        icon: BASE_URL + m[i][2]
-                    });
-		item.title = trim(m[i][3]);
-		items.push(item);
-                }
-		
-            var its = [];
-	    for (var i in items) {
-		items[i].orig_index = i;
-		its.push(items[i]);
-		}
-	    its.sort(function(a,b){return a["title"] > b["title"]});
-	    
-	    for (var i in its) {
-	    items[its[i].orig_index].moveBefore(i);
-	    }
-
-
+        var items = [];
+        page.metadata.title = new showtime.RichText(PREFIX + (/<title>(.*?)<\/title>/.exec(v)[1]));
+        var re = /<div class='index show'[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
+        var m = re.execAll(v);
+        for (i = 0; i < m.length; i++) {
+            var item = page.appendItem(PREFIX + "page:" + m[i][1], "video", {
+                title: new showtime.RichText(trim(m[i][3]) + ' | ' + trim(m[i][4])),
+                description: new showtime.RichText(m[i][5]),
+                icon: BASE_URL + m[i][2]
+            });
+            item.title = trim(m[i][3]);
+            items.push(item);
+        }
+        var its = [];
+        for(i in items) {
+            items[i].orig_index = i;
+            its.push(items[i]);
+        }
+        its.sort(function(a, b) {
+            return a.title > b.title;
+        });
+        for (i in its) {
+            items[its[i].orig_index].moveBefore(i);
+        }
         page.type = "directory";
         page.contents = "list";
         page.loading = false;
     });
-
     plugin.addURI(PREFIX + "page:(.*)", function(page, link) {
-	page.flush();
-        var i, v, item
-        p(BASE_URL + link);
+        var i, v, item;
         try {
             v = showtime.httpReq(BASE_URL + link).toString();
-	
             //var entries = [];
             var metadata = {};
-            metadata.title = trim(match(/<img alt="(.+?)" id="poster"/,v));
-	    metadata.year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/,v),10);
-	    p(parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/,v),10))
+            metadata.title = trim(match(/<img alt="(.+?)" id="poster"/, v));
+            metadata.year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v), 10);
             ////get_fanart(page,metadata.title)
-            metadata.icon = match(/id="poster" src="\/(.+?)"/, v)
-            
+            metadata.icon = match(/id="poster" src="\/(.+?)"/, v);
             //metadata.description = trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/,v));
-            p(showtime.JSONEncode(metadata));
             page.metadata.title = metadata.title + " (" + metadata.year + ")";
-                var re = /<a href="#?([^-]+)-([^"]+)" class="episode" data-episode-id="(.+?)" data-href="\/(.+?)">(.+?)<\/a>/g;
-                var m = re.execAll(v);
-                p(m)
-                if (m.toString()) {
-                    for (var i = 0; i < m.length; i++) {
-		    if (m[i][2] == '1') {page.appendItem("", "separator", {
-                        title: new showtime.RichText('Season '+m[i][1])
-                    });
-		    }
-
-                     item = page.appendItem(PREFIX + "play:" + m[i][4] +':'+ escape(m[i][5]), "video",{
+            var re = /<a href="#?([^-]+)-([^"]+)" class="episode" data-episode-id="(.+?)" data-href="\/(.+?)">(.+?)<\/a>/g;
+            var m = re.execAll(v);
+            if (m.toString()) {
+                for (i = 0; i < m.length; i++) {
+                    if (m[i][2] == '1') {
+                        page.appendItem("", "separator", {
+                            title: new showtime.RichText('Season ' + m[i][1])
+                        });
+                    }
+                    item = page.appendItem(PREFIX + "play:" + m[i][4] + ':' + escape(m[i][5]), "video", {
                         title: new showtime.RichText(m[i][5]),
                         icon: BASE_URL + metadata.icon,
                         description: new showtime.RichText(''),
-                        year: '' 
-                        
+                        year: ''
+                    });
+                    if (service.thetvdb) {
+                        item.bindVideoMetadata({
+                            title: metadata.title,
+                            season: parseInt(m[i][1], 10),
+                            episode: parseInt(m[i][2], 10)
                         });
-
-                    //item.bindVideoMetadata({title: metadata.title ,  season : parseInt(m[i][1],10), episode: parseInt(m[i][2],10)}) 
                     }
-		}
-
+                }
+            }
         } catch (ex) {
             page.error("Failed to process page");
             e(ex);
@@ -160,36 +145,36 @@
     });
     // Play links
     plugin.addURI(PREFIX + "play:(.*):(.*)", function(page, url, title) {
-    page.metadata.logo = plugin.path + "logo.png";
-    page.loading = false;
-    page.type = "video";
-    page.source = "videoparams:" + showtime.JSONEncode({
-        title: unescape(title),
-        canonicalUrl: PREFIX + "play:" + url + ":" + title,
-        sources: get_video_link(url)
-            });
+        page.metadata.logo = plugin.path + "logo.png";
+        page.loading = false;
+        page.type = "video";
+        var video = get_video_link(url);
+        var videoparams = {
+            title: unescape(title),
+            canonicalUrl: PREFIX + "play:" + url + ":" + title,
+            sources: [{
+                url: video.url
+            }],
+            subtitles: [{
+                url: video.sub,
+                language: 'English',
+                title: match(/subtitle\/.+?\/(.+)/,video.sub)
+            }]
+        };
+        page.source = "videoparams:" + showtime.JSONEncode(videoparams);
     });
-    
 
-
-    
     function get_video_link(url) {
-        var result_url = BASE_URL+url;
+        var video =[];
         try {
-            showtime.trace('Link for page: ' + result_url);
-            var v = showtime.httpReq(result_url);
-	    p(v)
-        
-
-	    var sources = [{url: BASE_URL+(/video.tag.src = "\/(.+?)"/.exec(v)[1]),
-		    subtitles: BASE_URL+(/src: "\/(.+?)"/.exec(v)[1])
-                }]
-
+            var v = showtime.httpReq(BASE_URL + url);
+            video.url = BASE_URL + match(/video.tag.src = "\/(.+?)"/,v);
+            video.sub = BASE_URL + match(/src: "\/(.+?)"/,v);
             showtime.trace("Video Link: " + result_url);
         } catch (err) {
             e(err);
         }
-        return sources;
+        return video;
     }
     //
     //extra functions
@@ -209,30 +194,7 @@
         }
         return matches;
     };
-    
 
-    
-    function sort(items, field, reverse) {
-        if (items.length == 0) return null;
-
-        var its = [];
-        for (var i in items) {
-            items[i].orig_index = i;
-            its.push(items[i]);
-        }
-
-        its.sort(function(a,b){return b[field] > a[field]});
-        if (reverse) its.reverse();
-
-        return its;
-    }
-       function pageUpdateItemsPositions(its) {
-        for (var i in its) {
-	      p(showtime.JSONEncode(items))
-            items[its[i].orig_index].moveBefore(i);
-        }
-    }
-    
     function match(re, st) {
         var v;
         if (re.exec(st)) {
@@ -240,7 +202,7 @@
         } else v = null;
         return v;
     }
-    
+
     function trim(s) {
         s = s.toString();
         s = s.replace(/(\r\n|\n|\r)/gm, "");
@@ -253,8 +215,6 @@
         t(ex);
         t("Line #" + ex.lineNumber);
     }
-    
-
 
     function t(message) {
         showtime.trace(message, plugin.getDescriptor().id);
