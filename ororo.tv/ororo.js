@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.1
+//ver 0.2
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -45,30 +45,29 @@
     var settings = plugin.createSettings("Ororo.tv", logo, "Online Videos");
     settings.createInfo("info", logo, "Plugin developed by Buksa \n");
     settings.createDivider('Settings:');
-    settings.createBool("tosaccepted", "Accepted TOS (available in opening the plugin):", false, function (v) {
+    settings.createBool("tosaccepted", "Accepted TOS (available in opening the plugin)", false, function(v) {
         service.tosaccepted = v;
-        settings.createBool("thetvdb", "Show more information using thetvdb", false, function (v) {
-            service.thetvdb = v;
-        });
     });
-
+    settings.createBool("thetvdb", "Show more information using thetvdb", false, function(v) {
+        service.thetvdb = v;
+    });
+    if (showtime.currentVersionInt >= 4 * 10000000 + 3 * 100000 + 261) {
+        plugin.addItemHook({
+            title: "Search in Another Apps",
+            itemtype: "video",
+            handler: function(obj, nav) {
+                var title = obj.metadata.title;
+                title = title.replace(/<.+?>/g, "").replace(/\[.+?\]/g, "");
+                nav.openURL("search:" + title);
+            }
+        });
+    }
     //First level start page
     plugin.addURI(PREFIX + "start", function(page) {
         var i, v;
         page.metadata.logo = plugin.path + "logo.png";
         page.metadata.title = PREFIX;
         v = showtime.httpReq(BASE_URL);
-        if (showtime.currentVersionInt >= 4 * 10000000 + 3 * 100000 + 261) {
-            plugin.addItemHook({
-                title: "Search in Another Apps",
-                itemtype: "video",
-                handler: function (obj, nav) {
-                    var title = obj.metadata.title;
-                    title = title.replace(/<.+?>/g, "").replace(/\[.+?\]/g, "");
-                    nav.openURL("search:" + title);
-                }
-            });
-        }
         if (!service.tosaccepted) if (showtime.message(tos, true, true)) service.tosaccepted = 1;
         else page.error("TOS not accepted. plugin disabled");
         var items = [];
@@ -85,7 +84,7 @@
             items.push(item);
         }
         var its = [];
-        for(i in items) {
+        for (i in items) {
             items[i].orig_index = i;
             its.push(items[i]);
         }
@@ -104,13 +103,12 @@
         try {
             v = showtime.httpReq(BASE_URL + link).toString();
             //var entries = [];
-            var metadata = {};
-            metadata.title = trim(match(/<img alt="(.+?)" id="poster"/, v));
-            metadata.year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v), 10);
+            var title = trim(match(/<img alt="(.+?)" id="poster"/, v));
+            var year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v), 10);
             ////get_fanart(page,metadata.title)
-            metadata.icon = match(/id="poster" src="\/(.+?)"/, v);
+            var icon = match(/id="poster" src="\/(.+?)"/, v);
             //metadata.description = trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/,v));
-            page.metadata.title = metadata.title + " (" + metadata.year + ")";
+            page.metadata.title = title + " (" + year + ")";
             var re = /<a href="#?([^-]+)-([^"]+)" class="episode" data-episode-id="(.+?)" data-href="\/(.+?)">(.+?)<\/a>/g;
             var m = re.execAll(v);
             if (m.toString()) {
@@ -122,13 +120,13 @@
                     }
                     item = page.appendItem(PREFIX + "play:" + m[i][4] + ':' + escape(m[i][5]), "video", {
                         title: new showtime.RichText(m[i][5]),
-                        icon: BASE_URL + metadata.icon,
+                        icon: BASE_URL + icon,
                         description: new showtime.RichText(''),
-                        year: ''
+                        year: year
                     });
                     if (service.thetvdb) {
                         item.bindVideoMetadata({
-                            title: metadata.title,
+                            title: trim(title),
                             season: parseInt(m[i][1], 10),
                             episode: parseInt(m[i][2], 10)
                         });
@@ -140,7 +138,6 @@
             e(ex);
         }
         page.type = "directory";
-        page.contents = "contents";
         page.loading = false;
     });
     // Play links
@@ -158,18 +155,18 @@
             subtitles: [{
                 url: video.sub,
                 language: 'English',
-                title: match(/subtitle\/.+?\/(.+)/,video.sub)
+                title: match(/subtitle\/.+?\/(.+)/, video.sub)
             }]
         };
         page.source = "videoparams:" + showtime.JSONEncode(videoparams);
     });
 
     function get_video_link(url) {
-        var video =[];
+        var video = [];
         try {
             var v = showtime.httpReq(BASE_URL + url);
-            video.url = BASE_URL + match(/video.tag.src = "\/(.+?)"/,v);
-            video.sub = BASE_URL + match(/src: "\/(.+?)"/,v);
+            video.url = BASE_URL + match(/video.tag.src = "\/(.+?)"/, v);
+            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v);
             showtime.trace("Video Link: " + result_url);
         } catch (err) {
             e(err);
