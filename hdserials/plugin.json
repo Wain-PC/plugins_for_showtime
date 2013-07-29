@@ -1,13 +1,13 @@
 {
 	"id": "HDSerials",
-	"version": "0.6.6",
+	"version": "0.6.8",
 	"type": "javascript",
 	"author": "Buksa",
-	"showtimeVersion": "4.3.227",
+	"showtimeVersion": "4.3.315",
 	"title": "HDSerials",
 	"synopsis": "HDserials.ru  - фильмы, сериалы и мультфильмы онлайн в HD.",
 	"description": "Приветствуем Вас на сайте HDserials.ru  - здесь можно совершенно бесплатно и без регистрации смотреть фильмы, сериалы и мультфильмы онлайн в HD. Для нас главное качество - поэтому Вы не увидите здесь экранок и не услышите некачественного перевода.",
-	"homepage": "https://github.com/buksa",
+	"homepage": "https://github.com/Buksa",
 	"category": "video",
 	"icon": "img/logo.png",
 	"file": "HDSerials.js"

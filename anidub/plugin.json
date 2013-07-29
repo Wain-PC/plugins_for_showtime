@@ -1,0 +1,14 @@
+{
+	"id": "anidub",
+	"version": "0.2",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "anidub",
+	"synopsis": "Anidub Аниме Онлайн здесь вы можете смотреть аниме бесплатно в озвучке любимых даберов.",
+	"description":"<p>anidub - online anime video for Showtime</p>",
+	"homepage":"https://github.com/Buksa/plugins_for_showtime/anidub",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "anidub.js"
+}
