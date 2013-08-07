@@ -1,0 +1,14 @@
+{
+	"id": "aMovies",
+	"version": "0.2",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "aMovies",
+	"synopsis": "aMovies - video from VK",
+	"description":"<p>aMovies - Showtime plugin is the integration of the website aMovies.tv into Showtime</p>",
+	"homepage":"https://github.com/Buksa/plugins_for_showtime/aMovies",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "aMovies.js"
+}

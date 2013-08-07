@@ -1,0 +1,14 @@
+{
+	"id": "asiandrama.ru",
+	"version": "0.1",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "AsianDrama.ru",
+	"synopsis": "Корейские сериалы без рекламы! Дорамы онлайн! Японские сериалы, китайские сериалы, Тайваньские сериалы и фильмы",
+	"description":"<p>AsianDrama plugin is the integration of the website AsianDrama.ru into Showtime.</p>",
+	"homepage":"https://github.com/Buksa/plugins_for_showtime/asiandrama.ru",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "asiandrama.ru.js"
+}

@@ -87,6 +87,18 @@
             title: new showtime.RichText('<font size="5" color="ffffff">' + "Дорамы Онлайн" + '</font>'),
             icon: plugin.path + "logo.png"
         });
+        page.appendItem(PREFIX + "select:жанрам", "directory", {
+            title: new showtime.RichText('<font size="5" color="ffffff">' + "Аниме по жанрам" + '</font>'),
+            icon: plugin.path + "logo.png"
+        });
+        page.appendItem(PREFIX + "select:даберам", "directory", {
+            title: new showtime.RichText('<font size="5" color="ffffff">' + "Аниме по даберам" + '</font>'),
+            icon: plugin.path + "logo.png"
+        });
+        page.appendItem(PREFIX + "select:годам", "directory", {
+            title: new showtime.RichText('<font size="5" color="ffffff">' + "Аниме по годам" + '</font>'),
+            icon: plugin.path + "logo.png"
+        });
         page.type = "directory";
         page.contents = "items";
         page.loading = false;
@@ -123,29 +135,31 @@
                 icon: m[i][3]
             });
         }
-        var nnext = match(/<span class="nnext"><a href="http:\/\/online.anidub.com([^"]+)">/, v);
-        p(nnext);
-        page.appendItem(PREFIX + 'index:' + nnext, 'directory', {
-            title: new showtime.RichText('Вперед')
-        });
+        var nnext = match(/<span class="nnext"><a href="http:\/\/online.anidub.com([^"]+)">/, v, 1);
+        if (nnext) {
+            page.appendItem(PREFIX + 'index:' + nnext, 'directory', {
+                title: new showtime.RichText('Вперед')
+            });
+        }
         //    return !!nnext//offset < parseInt(/class="last">.*?\/page-(.+?)\//.exec(v)[1], 10);
         // }
         // loader();
-        page.loading = false;
         // page.paginator = loader;
+        page.loading = false;
     });
     plugin.addURI(PREFIX + "page:(.*)", function(page, link) {
         var i, v;
-        p(BASE_URL + link);
+       // p(BASE_URL + link);
         try {
             v = showtime.httpReq(BASE_URL + link).toString();
             //var entries = [];
             var metadata = {};
-            metadata.title = trim(match(/<h1 class="titlfull" itemprop="name">(.+?)<\/h1>/, v));
+            metadata.title = trim(match(/<h1 class="titlfull" itemprop="name">(.+?)<\/h1>/, v, 1));
             ////get_fanart(page,metadata.title)
-            metadata.icon = match(/<div class="poster_img"><img itemprop="image" src="([^"]+)"alt=/, v), metadata.year = parseInt(match(/<li><b>Год: <\/b>[\S\s]+?>([^<]+)</, v), 10);
-            metadata.description = new showtime.RichText(trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/, v)));
-            p(showtime.JSONEncode(metadata));
+            metadata.icon = match(/<div class="poster_img"><img itemprop="image" src="([^"]+)"alt=/, v, 1);
+            metadata.year = parseInt(match(/<li><b>Год: <\/b>[\S\s]+?>([^<]+)</, v, 1), 10);
+            metadata.description = new showtime.RichText(trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/, v, 1)));
+           // p(metadata);
             page.metadata.title = metadata.title + "(" + metadata.year + ")";
             var re = /value=.http:\/\/vk.com\/([^|]+)[\S\s]+?>([^<]+)/g;
             var m = re.execAll(v);
@@ -154,7 +168,7 @@
                     page.appendItem(PREFIX + "play:" + m[i][1] + ':' + escape(m[i][2]), "video", metadata);
                 }
             } else {
-                var video = match(/d='film_main' src='http:\/\/vk.com\/(.+?)' width/, v);
+                var video = match(/d='film_main' src='http:\/\/vk.com\/(.+?)' width/, v, 1);
                 page.appendItem(PREFIX + "play:" + video + ':' + escape(metadata.title), "video", metadata);
             }
         } catch (ex) {
@@ -299,7 +313,7 @@
             var re = /<div class="title">[\S\s]+?"http:\/\/online.anidub.com(.+?)" >(.+?)<[\S\s]+?<img src="(.+?)"/g;
             var m = re.execAll(v);
             for (var i = 0; i < m.length; i++) {
-                p(m[i][1] + '\n' + m[i][2] + '\n' + m[i][3] + '\n');
+                //p(m[i][1] + '\n' + m[i][2] + '\n' + m[i][3] + '\n');
                 page.appendItem(PREFIX + "page:" + m[i][1], "video", {
                     title: new showtime.RichText(m[i][2]),
                     description: new showtime.RichText(m[i][2]),
@@ -318,7 +332,7 @@
         try {
             showtime.trace('php Link for page: ' + result_url);
             var v = showtime.httpGet(result_url);
-            p(v);
+            //p(v);
             var JSON = (/var vars = (.+)/.exec(v)[1]);
             if (JSON == '{};') {
                 result_url = /url: '(.+)'/.exec(v)[1];
@@ -369,12 +383,11 @@
         return matches;
     };
 
-    function match(re, st) {
-        var v;
+    function match(re, st, i) {
+        i = typeof i !== 'undefined' ? i : 0;
         if (re.exec(st)) {
-            v = re.exec(st)[1];
-        } else v = null;
-        return v;
+            return re.exec(st)[i];
+        } else return false;
     }
 
     function trim(s) {
@@ -395,6 +408,7 @@
     }
 
     function p(message) {
+        if (typeof(message) === 'object') message = showtime.JSONEncode(message);
         showtime.print(message);
     }
 
