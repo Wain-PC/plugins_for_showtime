@@ -1,0 +1,14 @@
+{
+	"id": "couchtuner",
+	"version": "0.1.1",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "couchtuner.eu",
+	"synopsis": "couchtuner.eu - video from VK",
+	"description":"<p>couchtuner.eu - Showtime plugin is the integration of the website couchtuner.eu into Showtime</p>",
+	"homepage":"https://github.com/Buksa/plugins_for_showtime/couchtuner.eu",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "couchtuner.js"
+}
