@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.2
+//ver 0.3
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -103,13 +103,14 @@
         try {
             v = showtime.httpReq(BASE_URL + link).toString();
             //var entries = [];
-            var title = trim(match(/<img alt="(.+?)" id="poster"/, v));
-            var year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v), 10);
+            var title = trim(match(/<img alt="(.+?)" id="poster"/, v, 1));
+            var year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1), 10);
             ////get_fanart(page,metadata.title)
-            var icon = match(/id="poster" src="\/(.+?)"/, v);
+            var icon = match(/id="poster" src="\/(.+?)"/, v, 1);
             //metadata.description = trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/,v));
             page.metadata.title = title + " (" + year + ")";
-            var re = /<a href="#?([^-]+)-([^"]+)" class="episode" data-episode-id="(.+?)" data-href="\/(.+?)">(.+?)<\/a>/g;
+            //<a href="#1-3" class="episode" data-href="/shows/planet-earth/videos/2946" data-id="2946" data-time="null">№3 Fresh Water</a>
+            var re = /<a href="#?([^-]+)-([^"]+)" [\S\s]+?data-href="([^"]+)[\S\s]+?>([^<]+)/g;
             var m = re.execAll(v);
             if (m.toString()) {
                 for (i = 0; i < m.length; i++) {
@@ -118,8 +119,8 @@
                             title: new showtime.RichText('Season ' + m[i][1])
                         });
                     }
-                    item = page.appendItem(PREFIX + "play:" + m[i][4] + ':' + escape(m[i][5]), "video", {
-                        title: new showtime.RichText(m[i][5]),
+                    item = page.appendItem(PREFIX + "play:" + m[i][3] + ':' + escape(m[i][4]), "video", {
+                        title: new showtime.RichText(m[i][4]),
                         icon: BASE_URL + icon,
                         description: new showtime.RichText(''),
                         year: year
@@ -127,6 +128,7 @@
                     if (service.thetvdb) {
                         item.bindVideoMetadata({
                             title: trim(title),
+                            year: year,
                             season: parseInt(m[i][1], 10),
                             episode: parseInt(m[i][2], 10)
                         });
@@ -147,6 +149,7 @@
         page.type = "video";
         var video = get_video_link(url);
         var videoparams = {
+            no_fs_scan: true,
             title: unescape(title),
             canonicalUrl: PREFIX + "play:" + url + ":" + title,
             sources: [{
@@ -165,8 +168,8 @@
         var video = [];
         try {
             var v = showtime.httpReq(BASE_URL + url);
-            video.url = BASE_URL + match(/video.tag.src = "\/(.+?)"/, v);
-            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v);
+            video.url = BASE_URL + match(/video.tag.src = "\/(.+?)"/, v, 1);
+            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v, 1);
             showtime.trace("Video Link: " + result_url);
         } catch (err) {
             e(err);
@@ -192,12 +195,11 @@
         return matches;
     };
 
-    function match(re, st) {
-        var v;
+    function match(re, st, i) {
+        i = typeof i !== 'undefined' ? i : 0;
         if (re.exec(st)) {
-            v = re.exec(st)[1];
-        } else v = null;
-        return v;
+            return re.exec(st)[i];
+        } else return false;
     }
 
     function trim(s) {
