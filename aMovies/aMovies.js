@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.3
+//ver 0.3.1
 (function(plugin) {
     var plugin_info = plugin.getDescriptor();
     var PREFIX = plugin_info.id;
@@ -179,12 +179,12 @@
                         year: md.year,
                         icon: md.icon
                     });
+                    p( 'title: '+md.eng_title+ ' year: '+md.year+' season: '+md.season + ' episode: '+match(/([0-9]+(?:\.[0-9]*)?)/, m[i][2], 1))
                     if (service.thetvdb) {
                         item.bindVideoMetadata({
                             title: md.eng_title,
-                            year: md.year,
                             season: +md.season,
-                            episode: match(/([0-9]+(?:\.[0-9]*)?)/, m[i][2], 1)
+                            episode: +match(/([0-9]+(?:\.[0-9]*)?)/, m[i][2], 1)
                         });
                     }
                 }

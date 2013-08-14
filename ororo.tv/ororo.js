@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.3
+//ver 0.4.1
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -103,7 +103,7 @@
         try {
             v = showtime.httpReq(BASE_URL + link).toString();
             //var entries = [];
-            var title = trim(match(/<img alt="(.+?)" id="poster"/, v, 1));
+            var title = showtime.entityDecode(trim(match(/<img alt="(.+?)" id="poster"/, v, 1)));
             var year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1), 10);
             ////get_fanart(page,metadata.title)
             var icon = match(/id="poster" src="\/(.+?)"/, v, 1);
@@ -119,7 +119,7 @@
                             title: new showtime.RichText('Season ' + m[i][1])
                         });
                     }
-                    item = page.appendItem(PREFIX + "play:" + m[i][3] + ':' + escape(m[i][4]), "video", {
+                    item = page.appendItem(PREFIX + "play:" + m[i][3] + ':' + escape(m[i][4] + '|' + title + '|' + parseInt(m[i][1], 10) + '|' + parseInt(m[i][2], 10)), "video", {
                         title: new showtime.RichText(m[i][4]),
                         icon: BASE_URL + icon,
                         description: new showtime.RichText(''),
@@ -128,7 +128,6 @@
                     if (service.thetvdb) {
                         item.bindVideoMetadata({
                             title: trim(title),
-                            year: year,
                             season: parseInt(m[i][1], 10),
                             episode: parseInt(m[i][2], 10)
                         });
@@ -147,10 +146,13 @@
         page.metadata.logo = plugin.path + "logo.png";
         page.loading = false;
         page.type = "video";
+        var s = unescape(title).split('|');
         var video = get_video_link(url);
         var videoparams = {
             no_fs_scan: true,
-            title: unescape(title),
+            title: unescape(s[1]),
+            season: s[2],
+            episode: s[3],
             canonicalUrl: PREFIX + "play:" + url + ":" + title,
             sources: [{
                 url: video.url
@@ -220,6 +222,7 @@
     }
 
     function p(message) {
+        if (typeof(message) === 'object') message = showtime.JSONEncode(message);
         showtime.print(message);
     }
 
