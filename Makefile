@@ -1,10 +1,17 @@
 
 PLUGINS= \
-	animult.tv.zip \
-	kaban.tv.zip \
+        aMovies.zip \
+        anidub.zip \
+        asiandrama.ru.zip \
+        HDSerials.zip \
+        hiphophit.zip \
+        kaban.tv.zip \
 	kino-dom.tv.zip \
+        krasview.zip \
+        ororo.tv \
 	video.az.zip \
-        hdserials.zip
+	couchtuner.eu.zip \
+        vkvideos.zip
 
 %.zip:
 	@echo "Bundle plugin '$*'"
