@@ -220,7 +220,7 @@
                 //subscan
                 title: s[0],
                 imdbid: imdbid ? imdbid : '<unknown>',
-                year: parseInt(s[1], 10),
+                //year: parseInt(s[1], 10),
                 season: match(/([0-9]+(?:\.[0-9]*)?)/, s[2], 1) ? match(/([0-9]+(?:\.[0-9]*)?)/, s[2], 1) : -1,
                 episode: match(/([0-9]+(?:\.[0-9]*)?)/, s[3], 1) ? match(/([0-9]+(?:\.[0-9]*)?)/, s[3], 1) : -1,
                 no_fs_scan: true,
