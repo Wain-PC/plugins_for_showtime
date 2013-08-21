@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.4.1
+//ver 0.4.2
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -110,7 +110,7 @@
             //metadata.description = trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/,v));
             page.metadata.title = title + " (" + year + ")";
             //<a href="#1-3" class="episode" data-href="/shows/planet-earth/videos/2946" data-id="2946" data-time="null">№3 Fresh Water</a>
-            var re = /<a href="#?([^-]+)-([^"]+)" [\S\s]+?data-href="([^"]+)[\S\s]+?>([^<]+)/g;
+            var re = /<a href="#?([^-]+)-([^"]+)" [\S\s]+?data-href="\/([^"]+)[\S\s]+?>([^<]+)/g;
             var m = re.execAll(v);
             if (m.toString()) {
                 for (i = 0; i < m.length; i++) {
@@ -170,9 +170,10 @@
         var video = [];
         try {
             var v = showtime.httpReq(BASE_URL + url);
-            video.url = BASE_URL + match(/video.tag.src = "\/(.+?)"/, v, 1);
-            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v, 1);
-            showtime.trace("Video Link: " + result_url);
+	    //p(v.toString())
+            video.url = BASE_URL + match(/video.tag.src = webm \? "\/(.+?)"/, v.toString(), 1);
+            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v.toString(), 1);
+
         } catch (err) {
             e(err);
         }
