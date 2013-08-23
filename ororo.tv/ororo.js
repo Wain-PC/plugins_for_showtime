@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.4.2
+//ver 0.4.3
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -41,6 +41,12 @@
     tos += "proprietary. Do you accept this terms?";
     // Register a service (will appear on home page)
     var service = plugin.createService("Ororo.tv", PREFIX + "start", "video", true, logo);
+    var main_menu_order = plugin.createStore('main_menu_order', true);
+    var items = [];
+    var items_tmp = [];
+    //if (!main_menu_order.ready) {
+    //    main_menu_order.ready = "1";
+    //}
     //settings
     var settings = plugin.createSettings("Ororo.tv", logo, "Online Videos");
     settings.createInfo("info", logo, "Plugin developed by Buksa \n");
@@ -65,37 +71,81 @@
     //First level start page
     plugin.addURI(PREFIX + "start", function(page) {
         var i, v;
-        page.metadata.logo = plugin.path + "logo.png";
-        page.metadata.title = PREFIX;
-        v = showtime.httpReq(BASE_URL);
-        if (!service.tosaccepted) if (showtime.message(tos, true, true)) service.tosaccepted = 1;
-        else page.error("TOS not accepted. plugin disabled");
-        var items = [];
-        page.metadata.title = new showtime.RichText(PREFIX + (/<title>(.*?)<\/title>/.exec(v)[1]));
-        var re = /<div class='index show'[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
-        var m = re.execAll(v);
-        for (i = 0; i < m.length; i++) {
-            var item = page.appendItem(PREFIX + "page:" + m[i][1], "video", {
-                title: new showtime.RichText(trim(m[i][3]) + ' | ' + trim(m[i][4])),
-                description: new showtime.RichText(m[i][5]),
-                icon: BASE_URL + m[i][2]
-            });
-            item.title = trim(m[i][3]);
-            items.push(item);
+        page.metadata.glwview = plugin.path + "views/array2.view";
+        try {
+            page.metadata.logo = plugin.path + "logo.png";
+            page.metadata.title = PREFIX;
+            pageMenu(page);
+            items = [];
+            items_tmp = [];
+            v = showtime.httpReq(BASE_URL);
+            if (!service.tosaccepted) if (showtime.message(tos, true, true)) service.tosaccepted = 1;
+            else page.error("TOS not accepted. plugin disabled");
+            // p(v.toString())
+            page.metadata.title = new showtime.RichText(PREFIX + (/<title>(.*?)<\/title>/.exec(v)[1]));
+            //var re = /<div class='index show'[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
+            //var re = /<div class='index show'[\S\s]+?data-newest='([^']+)[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g
+            var re = /<div class='index show'[\S\s]+?data-newest='([^']+)[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?icon-star[\S\s]+?([0-9]+(?:\.[0-9]*)?)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
+            var m = re.execAll(v);
+            for (i = 0; i < m.length; i++) {
+                var item = page.appendItem(PREFIX + "page:" + m[i][2], "video", {
+                    title: new showtime.RichText(trim(m[i][5]) + ' | ' + trim(m[i][6])),
+                    description: new showtime.RichText(m[i][7]),
+                    icon: BASE_URL + m[i][3],
+                    rating: m[i][4] * 10
+                });
+                item.title = trim(m[i][5]);
+                item.newest = m[i][1];
+                item.rating = +m[i][4];
+                items.push(item);
+                items_tmp.push(item);
+            }
+            try {
+                for (i in items) {
+                    items[i].id = i;
+                }
+                //if (!main_menu_order.order) {
+                items_tmp = page.getItems();
+                //var its = [];
+                //for (i in items) {
+                //    items[i].orig_index = i;
+                //    its.push(items[i]);
+                //}
+                //its.sort(function(a, b) {
+                //    return a.title > b.title;
+                //});
+                for (i = 0; i < items_tmp.length; i++) {
+                    if (!items_tmp[i].id) delete items_tmp[i];
+                }
+                items_tmp.sort(function(a, b) {
+                    return b.newest > a.newest;
+                });
+                //       main_menu_order.order = showtime.JSONEncode(items_tmp);
+                //    }
+                //    main_menu_order.order;
+                //var order = showtime.JSONDecode(main_menu_order.order);
+                var order = (items_tmp);
+                for (i in order) {
+                    items[order[i].id].moveBefore(i);
+                }
+                page.reorderer = function(item, before) {
+                    item.moveBefore(before);
+                    var items = page.getItems();
+                    for (var i = 0; i < items.length; i++) {
+                        if (!items[i].id) delete items[i];
+                    }
+                    main_menu_order.order = showtime.JSONEncode(items);
+                };
+            } catch (ex) {
+                t("Error while parsing main menu order");
+                e(ex);
+            }
+            page.type = "directory";
+            page.contents = "items";
+        } catch (ex) {
+            page.error("Failed to process page");
+            e(ex);
         }
-        var its = [];
-        for (i in items) {
-            items[i].orig_index = i;
-            its.push(items[i]);
-        }
-        its.sort(function(a, b) {
-            return a.title > b.title;
-        });
-        for (i in its) {
-            items[its[i].orig_index].moveBefore(i);
-        }
-        page.type = "directory";
-        page.contents = "list";
         page.loading = false;
     });
     plugin.addURI(PREFIX + "page:(.*)", function(page, link) {
@@ -170,14 +220,109 @@
         var video = [];
         try {
             var v = showtime.httpReq(BASE_URL + url);
-	    //p(v.toString())
+            //p(v.toString())
             video.url = BASE_URL + match(/video.tag.src = webm \? "\/(.+?)"/, v.toString(), 1);
             video.sub = BASE_URL + match(/src: "\/(.+?)"/, v.toString(), 1);
-
         } catch (err) {
             e(err);
         }
         return video;
+    }
+
+    function pageMenu(page) {
+        //page.metadata.background = ui.background;
+        page.metadata.background = plugin.path + "views/img/background.png";
+        page.metadata.backgroundAlpha = 0.5;
+        //page.metadata.font = "default";
+        // page.appendAction("navopen", "search:", true, { title: "Search", icon: plugin.path + "views/img/search.png" });
+        page.appendAction("pageevent", "sortDateDec", true, {
+            title: "Sort by Date (Decrementing)",
+            icon: plugin.path + "views/img/sort_date_dec.png"
+        });
+        page.appendAction("pageevent", "sortViewsDec", true, {
+            title: "Sort by Views (Decrementing)",
+            icon: plugin.path + "views/img/sort_views_dec.png"
+        });
+        page.appendAction("pageevent", "sortAlphabeticallyInc", true, {
+            title: "Sort Alphabetically (Incrementing)",
+            icon: plugin.path + "views/img/sort_alpha_inc.png"
+        });
+        page.appendAction("pageevent", "sortAlphabeticallyDec", true, {
+            title: "Sort Alphabetically (Decrementing)",
+            icon: plugin.path + "views/img/sort_alpha_dec.png"
+        });
+        //  page.appendAction("pageevent", "sortDefault", true, { title: "Sort as Default", icon: plugin.path + "views/img/sort_default.png" });
+        var sorts = [
+            ["sortAlphabeticallyInc", "Alphabetically (A->Z)"],
+            ["sortAlphabeticallyDec", "Alphabetically (Z->A)"],
+            ["sortViewsDec", "Views (decrementing)"],
+            ["sortDateDec", "Published (decrementing)"],
+            ["sortDefault", "Default", true]
+        ];
+        page.options.createMultiOpt("sort", "Sort by...", sorts, function(v) {
+            eval(v + "()");
+        });
+
+        function sortAlphabeticallyInc() {
+            var its = sort(items, "title", true);
+            pageUpdateItemsPositions(its);
+        }
+
+        function sortAlphabeticallyDec() {
+            var its = sort(items, "title", false);
+            pageUpdateItemsPositions(its);
+        }
+
+        function sortViewsDec() {
+            var its = sort(items, "rating", false);
+            pageUpdateItemsPositions(its);
+        }
+
+        function sortDateDec() {
+            var its = sort(items, "newest", false);
+            pageUpdateItemsPositions(its);
+        }
+
+        function sortDefault() {
+            for (var i in items_tmp) {
+                items[i].moveBefore(items_tmp[i].orig_index);
+            }
+        }
+        page.onEvent('sortAlphabeticallyInc', function() {
+            sortAlphabeticallyInc();
+        });
+        page.onEvent('sortAlphabeticallyDec', function() {
+            sortAlphabeticallyDec();
+        });
+        page.onEvent('sortViewsDec', function() {
+            sortViewsDec();
+        });
+        page.onEvent('sortDateDec', function() {
+            sortDateDec();
+        });
+        page.onEvent('sortDefault', function() {
+            sortDefault();
+        });
+    }
+
+    function pageUpdateItemsPositions(its) {
+        for (var i in its) {
+            items[its[i].orig_index].moveBefore(i);
+        }
+    }
+
+    function sort(items, field, reverse) {
+        if (items.length === 0) return null;
+        var its = [];
+        for (var i in items) {
+            items[i].orig_index = i;
+            its.push(items[i]);
+        }
+        its.sort(function(a, b) {
+            return b[field] > a[field];
+        });
+        if (reverse) its.reverse();
+        return its;
     }
     //
     //extra functions
