@@ -16,12 +16,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.3.2
+//ver 0.3.4
 (function(plugin) {
     var plugin_info = plugin.getDescriptor();
     var PREFIX = plugin_info.id;
     // bazovyj adress saita
-    var BASE_URL = 'http://www.amovies.tv';
+    var BASE_URL = 'http://amovies.tv';
     //logo
     var logo = plugin.path + 'logo.png';
     //tos
@@ -61,42 +61,47 @@
         page.metadata.title = PREFIX;
         if (!service.tosaccepted) if (showtime.message(tos, true, true)) service.tosaccepted = 1;
         else page.error("TOS not accepted. plugin disabled");
-        //<ul class="menu">
-        //    <li><a href="/" class="top-menu-link">Главная</a>     </li>
-        //    <li><a href="http://amovies.tv/film/" class="top-menu-link">Фильмы</a></li>
-        //    <li><a href="http://amovies.tv/serials/" class="top-menu-link">Сериалы</a></li>
-        //    <li><a href="http://amovies.tv/serials-rus-sub/" class="top-menu-link">Сериалы (SUB)</a></li>
-        //    <li><a href="http://amovies.tv/cartoons/" class="top-menu-link">Мультфильмы</a></li></ul>
-        //        
-        page.appendItem(PREFIX + ":index:/", "directory", {
-            title: new showtime.RichText("Главная"),
-            icon: logo
-        });
-        page.appendItem(PREFIX + ":index:/film/", "directory", {
-            title: new showtime.RichText("Фильмы"),
-            icon: logo
-        });
-        page.appendItem(PREFIX + ":index:/serials/", "directory", {
-            title: new showtime.RichText("Сериалы"),
-            icon: logo
-        });
-        page.appendItem(PREFIX + ":index:/serials-rus-sub/", "directory", {
-            title: new showtime.RichText("Сериалы (SUB)"),
-            icon: logo
-        });
-        page.appendItem(PREFIX + ":index:/cartoons/", "directory", {
-            title: new showtime.RichText("Мультфильмы"),
-            icon: logo
-        });
+        var v = showtime.httpReq(BASE_URL).toString();
+        var re = /h2 class="title_d_dot"[\S\s]+?<span>([^<]+)[\S\s]+?href="([^"]+)[\S\s]+?<ul class=([\S\s]+?)<\/ul/g
+        //var re2 =/date">([^<]+)[\S\s]+?src="([^"]+)[\S\s]+?href="http:\/\/amovies.tv([^"]+)">([^<]+)[\S\s]+?<span>(.+?)<\/span>/g
+        //var re2 =/date">(.+?)<[\S\s]+?src="([^"]+)[\S\s]+?href="http:\/\/amovies.tv([^"]+)">([^<]+)/g
+        //var re2 =/date">(.+?)<[\S\s]+?[\S\s]+?src="(.+?)"[\S\s]+?href="http:\/\/amovies.tv(.+?)">(.+?)<[\S\s]+?span>(.+?)<[\S\s]+?class="zvyk">(.+?)</g
+        var re2 = /date">(.+?)<[\S\s]+?src="(.+?)"[\S\s]+?href="http:\/\/amovies.tv(.+?)">(.+?)<[\S\s]+?<span>(.*)/g;
+        var m = re.execAll(v);
+        var data = []
+        for (var i = 0; i < m.length; i++) {
+            page.appendItem("", "separator", {
+                title: new showtime.RichText(m[i][1])
+            });
+            data.push([{
+                title: m[i][1],
+                href: m[i][2]
+            }])
+            var m2 = re2.execAll(m[i][3].trim())
+            for (var j = 0; j < m2.length; j++) {
+                page.appendItem(PREFIX + ":page:" + m2[j][3] + ":" + escape(m2[j][2]), "video", {
+                    title: new showtime.RichText(m2[j][4] + ' | ' + m2[j][5].replace('<br />', ' | ')),
+                    description: new showtime.RichText(m2[j][5] + '\n' + "Updated: " + m2[j][1]),
+                    icon: m2[j][2]
+                });
+                data.push({
+                    title: (m2[j][4]),
+                    description: (m2[j][5] + '\n' + "Updated: " + m2[j][1]),
+                    icon: m2[j][2]
+                })
+            }
+            page.appendItem(PREFIX + ":index:" + m[i][2], "directory", {
+                title: ('Дальше больше') + ' ►',
+                icon: logo
+            });
+        }
+        p(data)
         page.type = "directory";
         page.contents = "items";
         page.loading = false;
     });
     //Second level 
     plugin.addURI(PREFIX + ":index:(.*)", function(page, link) {
-        //if (!service.tosaccepted)
-        //if (showtime.message(tos, true, true)) service.tosaccepted = 1;
-        //else page.error("TOS not accepted. plugin disabled");
         var re, v, m;
         page.contents = "items";
         page.type = "directory";
@@ -109,43 +114,19 @@
             title: new showtime.RichText('сортировка по : ' + m[1])
         });
         var offset = 1;
-        
-//<ul class="ul_clear navigation">
-//<span><li>Назад</li></span>
-//<li><span>1</span> <a href="http://amovies.tv/serials/page/2/">2</a> <a href="http://amovies.tv/serials/page/3/">3</a> <a href="http://amovies.tv/serials/page/4/">4</a> <a href="http://amovies.tv/serials/page/5/">5</a> <a href="http://amovies.tv/serials/page/6/">6</a> <a href="http://amovies.tv/serials/page/7/">7</a> <a href="http://amovies.tv/serials/page/8/">8</a> <a href="http://amovies.tv/serials/page/9/">9</a> <a href="http://amovies.tv/serials/page/10/">10</a> <span class="nav_ext">...</span> <a href="http://amovies.tv/serials/page/17/">17</a></li>
-//<a href="http://amovies.tv/serials/page/2/"><li>Вперед</li></a>
-//
-
         var nnext = match(/<ul class="ul_clear navigation">[\S\s]+?"http:\/\/amovies.tv(.+?)"><li>Вперед<\/li><\/a>/, v, 1);
         //var total_page = parseInt(/<div class="navigation[\S\s]+?nav_ext[\S\s]+?">([^<]+)/.exec(v)[1], 10);
 
         function loader() {
             //http://amovies.tv/serials/page/2/
             var v = showtime.httpReq(BASE_URL + link + 'page/' + offset + '/');
-
-//<li>
-//<div class="date">Сегодня, 01:01</div>
-//<div class="post_prev_img"><img src="/uploads/posts/2013-06/1371803277_fdab88ec14.jpg" alt="Милые обманщицы"/></div>
-//<div class="post_info">
-//<div class="post_name">
-//<a href="http://amovies.tv/serials/388-milye-obmanschicy.html">Милые обманщицы</a>
-//<span>4 сезон 0-8,11 серия<br />Flux-Team</span>
-//</div>
-//<ul class="ul_clear">
-//<li class="genre"><img src="/amovies/templates/Watch/images/genre.png" alt="date" width="8" height="8" /> Сегодня, 01:01</li>
-//
-//</ul>
-//</div>
-//<div class="post_text"><div id="news-id-388" style="display:inline;"></div></div>
-//</li>
-            //re = /<div class="main-news[\S\s]+?<h1>(.+?)<\/h1>[\S\s]+?-><[\S\s]+?"([^"]+)[\S\s]+?2><a href="http:\/\/amovies.tv([^"]+)">([^<]+)/g;
             re = /<div class="date">(.+?)<[\S\s]+?img src="([^"]+)[\S\s]+?<a href="http:\/\/amovies.tv([^"]+)">([^<]+)[\S\s]+?<span>(.+?)<\/span>/g
             m = re.execAll(v);
             for (var i = 0; i < m.length; i++) {
-                 // p(m[i][1]+'\n'+m[i][2]+'\n'+m[i][3]+'\n')
-                page.appendItem(PREFIX + ":page:" + m[i][3] + ":" + m[i][2].replace('http://', ''), "video", {
-                    title: new showtime.RichText(m[i][4]+ ' | '+m[i][5].replace('<br />', ' | ')),
-                    description: new showtime.RichText(m[i][5]+'\n'+"Updated: " + m[i][1] ),
+                // p(m[i][1]+'\n'+m[i][2]+'\n'+m[i][3]+'\n')
+                page.appendItem(PREFIX + ":page:" + m[i][3] + ":" + escape(m[i][2]), "video", {
+                    title: new showtime.RichText(m[i][4] + ' | ' + m[i][5].replace('<br />', ' | ')),
+                    description: new showtime.RichText(m[i][5] + '\n' + "Updated: " + m[i][1]),
                     icon: m[i][2]
                 });
             }
@@ -154,7 +135,7 @@
             //    title: new showtime.RichText('Вперед')
             //});
             //}
-            var nnext =  match(/<ul class="ul_clear navigation">[\S\s]+?"http:\/\/amovies.tv(.+?)"><li>Вперед<\/li><\/a>/, v, 1);;
+            var nnext = match(/<ul class="ul_clear navigation">[\S\s]+?"http:\/\/amovies.tv(.+?)"><li>Вперед<\/li><\/a>/, v, 1);;
             //p('nnext='+nnext+' !nnext='+!nnext+' !!nnext='+!!nnext)
             offset++;
             return !!nnext;
@@ -175,44 +156,133 @@
                 page.metadata.backgroundAlpha = 0.5;
                 page.metadata.background = bg;
             }
-            
             var md = {};
-            re = /Добавлено: (.+?)\s\|\s(.+?)\s\|\s([0-9]+(?:\.[0-9]*)?) сезон/;
-            md.title = showtime.entityDecode(match(/<div class="full-news">[\S\s]+?>([^<]+)/, v, 1));
-            md.season = parseInt(match(re, v, 3), 10);
-            md.eng_title = showtime.entityDecode(match(re, v, 2));
-            md.icon = 'http://www.' + icon;
-            md.imdbid = /http:\/\/www.imdb.com\/title\/(tt\d+).*?<\/a>/.exec(showtime.httpReq('http://www.google.com/search?q=imdb+' + encodeURIComponent(md.title).toString(), {
-            debug: true
-        })) [1];
-            md.year = match(/Год[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1) ? match(/Год[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1) : 0;
-            md.description = new showtime.RichText(trim(showtime.entityDecode(match(/<div id="news-id-[\S\s]+?>(.+?)<\/div/, v, 1))));
-            //            p(showtime.JSONEncode(md));
+            re = /:.+?\|\s([^|]+?)\|\s+([0-9]+(?:\.[0-9]*)?) сезон/;
+            md.title = showtime.entityDecode(match(/<h1 class="title_d_dot"><span>(.*?)<\/span>/, v, 1));
+            md.season = parseInt(match(re, v, 2), 10);
+            md.eng_title = showtime.entityDecode(match(re, v, 1));
+            md.icon = unescape(icon);
+            md.title = showtime.entityDecode(match(/<h1 class="title_d_dot"><span>(.*?)<\/span>/, v, 1));
+            //                md.icon = match(/<div class="prev_img"><img src="(.+?)" alt=/, v, 1);               
+            md.year = +match(/Год[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1);
+            md.status = match(/<li><strong>Статус:<\/strong><span>(.+?)</, v, 1);
+            md.genre = match(/<li><strong>Жанр:<\/strong><span>(.+?)</, v, 1);
+            md.duration = +match(/<li><strong>Время[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1);
+            md.country = match(/<li><strong>Страна:<\/strong><span>(.+?)</, v, 1);
+            md.rating = +match(/<li><strong>Рейтинг[\S\s]+?([0-9]+(?:\.[0-9]*)?)<\/strong>/, v, 1);
+            md.director = match(/<li><strong>Режиссер:<\/strong><span>(.+?)<\/span>/, v, 1);
+            md.actor = match(/<li><strong>Актеры:<\/strong><span>(.+?)<\/span><\/li>/, v, 1);
+            md.description = match(/<div class="post_text">([\S\s]+?)<\/div><\/div>/, v, 1);
+            p(md)
             page.metadata.title = md.title;
+            //Трейлер:
+            var trailer = match(/Трейлер[\S\s]+?video_begin:(.+?)--/, v, 1)
+            if (trailer) {
+                page.appendItem(trailer, "video", {
+                    title: 'Трейлер: ' + md.title,
+                    season: +md.season,
+                    year: md.year,
+                    imdbid: md.imdbid,
+                    icon: md.icon,
+                    genre: md.genre,
+                    duration: +md.duration,
+                    rating: +md.rating * 10,
+                    description: new showtime.RichText((md.status ? 'Статус: ' + md.status + '\n' : '') + (md.director ? 'Режиссер: ' + md.director + '\n' : '') + (md.actor ? 'Актеры: ' + md.actor + '\n' : '') + '\n' + md.description)
+                });
+            }
             var re = /value="http:\/\/vk.com\/([^"]+)[\S\s]+?>([^<]+)/g;
             var m = re.execAll(v);
-            if (m.toString()) {
-                for (i = 0; i < m.length; i++) {
-                    item = page.appendItem(PREFIX + ":play:" + m[i][1] + ':' + escape(md.eng_title + ' | ' + md.year + ' | ' + md.season + ' сезон | ' + m[i][2]), "video", {
-                        title: md.eng_title + ' | ' + md.season + ' сезон | ' + m[i][2],
-                        description: md.description,
-                        season: +md.season,
-                        year: md.year,
-                        icon: md.icon,
-                        imdbid : md.imdbid
+            if (link.indexOf('katalog-serialov') != -1) {
+                p('katalog-serialov' + '\n' + link)
+                p(v.match(/<div class="arhive_news">[\S\s]+?<div class="treiler">/))
+                var re = /<strong>(\w сезон) <\/strong>(.*)/g
+                var re2 = /href="http:\/\/amovies.tv(.+?)" >(.+?)<\/a>/g;
+                var m = re.execAll(v);
+                for (var i = 0; i < m.length; i++) {
+                    page.appendItem("", "separator", {
+                        title: new showtime.RichText(m[i][1])
                     });
-                    
-                    if (service.thetvdb) {
-                        item.bindVideoMetadata({
-                            title: md.eng_title,
-                            season: +md.season,
-                            episode: +match(/([0-9]+(?:\.[0-9]*)?)/, m[i][2], 1)
+                    var m2 = re2.execAll(m[i][2].trim())
+                    for (var j = 0; j < m2.length; j++) {
+                        page.appendItem(PREFIX + ":page:" + m2[j][1] + ":" + escape(md.icon), "video", {
+                            title: new showtime.RichText(md.title + ' | ' + m2[j][2]),
+                            year: md.year,
+                            icon: md.icon,
+                            genre: md.genre,
+                            duration: +md.duration,
+                            rating: +md.rating * 10,
+                            description: new showtime.RichText((md.status ? 'Статус: ' + md.status + '\n' : '') + (md.director ? 'Режиссер: ' + md.director + '\n' : '') + (md.actor ? 'Актеры: ' + md.actor + '\n' : '') + '\n' + md.description)
                         });
                     }
                 }
-            } else {
+            }
+            if (link.indexOf('serials') != -1) {
+                p('serials' + '\n' + link)
+                p(v)
+                //md.title = showtime.entityDecode(match(/<h1 class="title_d_dot"><span>(.*?)<\/span>/, v, 1));
+                //md.icon = match(/<div class="prev_img"><img src="(.+?)" alt=/, v, 1);
+                //md.year = +match(/Год[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1);
+                //md.status = match(/<li><strong>Статус:<\/strong><span>(.+?)</, v, 1);
+                //md.genre = match(/<li><strong>Жанр:<\/strong><span>(.+?)</, v, 1);
+                //md.duration = +match(/<li><strong>Время[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1);
+                //md.country = match(/<li><strong>Страна:<\/strong><span>(.+?)</, v, 1);
+                //md.rating = +match(/<li><strong>Рейтинг[\S\s]+?([0-9]+(?:\.[0-9]*)?)<\/strong>/, v, 1);
+                //md.director = match(/<li><strong>Режиссер:<\/strong><span>(.+?)<\/span>/, v, 1);
+                //md.actor = match(/<li><strong>Актеры:<\/strong><span>(.+?)<\/span><\/li>/, v, 1);
+                //md.description = match(/<div class="post_text">([\S\s]+?)<\/div><\/div>/, v, 1);
+                //p(md)
+                var re = /value="http:\/\/vk.com\/([^"]+)[\S\s]+?>([^<]+)/g;
+                var m = re.execAll(v);
+                if (m.toString()) {
+                    for (i = 0; i < m.length; i++) {
+                        item = page.appendItem(PREFIX + ":play:" + m[i][1] + ':' + escape(md.eng_title + ' | ' + md.year + ' | ' + md.season + ' сезон | ' + m[i][2]), "video", {
+                            title: md.eng_title + ' | ' + md.season + ' сезон | ' + m[i][2],
+                            season: +md.season,
+                            imdbid: md.imdbid,
+                            
+                            year: md.year,
+                            icon: md.icon,
+                            genre: md.genre,
+                            duration: +md.duration,
+                            rating: +md.rating * 10,
+                            description: new showtime.RichText((md.status ? 'Статус: ' + md.status + '\n' : '') + (md.director ? 'Режиссер: ' + md.director + '\n' : '') + (md.actor ? 'Актеры: ' + md.actor + '\n' : '') + '\n' + md.description)
+                        });
+                        if (service.thetvdb) {
+                            item.bindVideoMetadata({
+                                title: md.eng_title,
+                                season: +md.season,
+                                episode: +match(/([0-9]+(?:\.[0-9]*)?)/, m[i][2], 1)
+                            });
+                        }
+                    }
+                }
+                //Перейти к каталогу сериала
+                re = /<div class="link_catalog">.+?"http:\/\/amovies.tv(.+?)">(.+?)</
+                m = re.exec(v)
+                if (m) {
+                    page.appendItem(PREFIX + ":page:" + m[1] + ':' + escape(md.icon), "directory", {
+                        title: m[2]
+                    });
+                }
+                //page.appendItem("", "separator", {
+                //    title: new showtime.RichText('Перейти к каталогу сериала')
+                //});
+            }
+            if (link.indexOf('/film/') != -1) {
+                p('film' + '\n' + link)
+                p(v)
                 var video = match(/<iframe src="http:\/\/vk.com\/([^"]+)/, v, 1);
-                item = page.appendItem(PREFIX + ":play:" + video + ':' + escape(md.title.split(' | ')[1] + ' | ' + md.year), "video", md);
+                item = page.appendItem(PREFIX + ":play:" + video + ':' + escape(md.title.split(' | ')[1] + ' | ' + md.year), "video", {
+                    title: md.title,
+                    season: +md.season,
+                    year: md.year,
+                    imdbid: md.imdbid,
+                    icon: md.icon,
+                    genre: md.genre,
+                    duration: +md.duration,
+                    rating: +md.rating * 10,
+                    description: new showtime.RichText((md.status ? 'Статус: ' + md.status + '\n' : '') + (md.director ? 'Режиссер: ' + md.director + '\n' : '') + (md.actor ? 'Актеры: ' + md.actor + '\n' : '') + '\n' + md.description)
+                });
                 if (service.thetvdb) {
                     item.bindVideoMetadata({
                         title: md.title.split(' | ')[1],
@@ -260,23 +330,23 @@
     plugin.addSearcher(PREFIX + " - Videos", plugin.path + "logo.png", function(page, query) {
         try {
             showtime.trace("Search aMovies Videos for: " + query);
-            var v = showtime.httpReq(BASE_URL, {
+            var v = showtime.httpReq(BASE_URL + '/index.php?do=search', {
                 debug: true,
                 postdata: {
                     do: 'search',
                     subaction: 'search',
-                    story: query,
-                    x: 0,
-                    y: 0
+                    story: query
                 }
             });
-            var re = /main-news-c[\S\s]+?--><a href="([^"]+)[\S\s]+?link[\S\s]+?http:\/\/amovies.tv([^"]+)[\S\s]+?h2>[\S\s]+?>([^<]+)/g;
+            p(v.toString())
+            var re = /fullresult_search[\S\s]+?date.+?>(.+?)<[\S\s]+?src="(.+?)"[\S\s]+?href="http:\/\/amovies.tv(.+?)" >(.+?)<[\S\s]+?<span>(.*)<\//g;
             var m = re.execAll(v.toString());
             for (var i = 0; i < m.length; i++) {
-                p(m[i][1] + '\n' + m[i][2] + '\n' + m[i][3] + '\n');
-                page.appendItem(PREFIX + ":page:" + m[i][2] + ":" + escape(m[i][1]), "video", {
-                    title: new showtime.RichText(m[i][3]),
-                    icon: m[i][1]
+                p(m[i][1] + '\n' + m[i][2] + '\n' + m[i][3] + '\n' + m[i][5].length);
+                page.appendItem(PREFIX + ":page:" + m[i][3] + ":" + escape(m[i][2]), "video", {
+                    title: new showtime.RichText(m[i][4] + (m[i][5].length == 0 ? '' : ' | ' + m[i][5])),
+                    icon: m[i][2],
+                    description: new showtime.RichText(m[i][5] + '\n' + "Updated: " + m[i][1])
                 });
                 page.entries = i;
             }
@@ -328,6 +398,11 @@
     //extra functions
     //
     // Add to RegExp prototype
+    const blue = "6699CC", orange = "FFA500";
+
+    function coloredStr(str, color) {
+        return '<font color="' + color + '">' + str + '</font>';
+    }
     RegExp.prototype.execAll = function(string) {
         var matches = [];
         var match = null;
@@ -356,6 +431,11 @@
         s = s.replace(/(^\s*)|(\s*$)/gi, "");
         s = s.replace(/[ ]{2,}/gi, " ");
         return s;
+    }
+    if (!String.prototype.trim) {
+        String.prototype.trim = function() {
+            return this.replace(/^\s+|\s+$/g, '');
+        };
     }
 
     function e(ex) {
