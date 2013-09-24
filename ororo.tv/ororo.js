@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.4.4
+//ver 0.4.5
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -57,6 +57,16 @@
     settings.createBool("thetvdb", "Show more information using thetvdb", false, function(v) {
         service.thetvdb = v;
     });
+    settings.createBool("subs", "Show Subtitle from Ororo.tv ", true, function(v) {
+        service.subs = v;
+    });
+    var Format = [
+        ['.mp4', 'MP4', true],
+        ['.webm', 'Webm/VP8']
+    ];
+    settings.createMultiOpt("Format", "Format", Format, function(v) {
+        service.Format = v;
+    });
     if (showtime.currentVersionInt >= 4 * 10000000 + 3 * 100000 + 261) {
         plugin.addItemHook({
             title: "Search in Another Apps",
@@ -73,7 +83,7 @@
         var i, v;
         page.metadata.glwview = plugin.path + "views/array2.view";
         try {
-            page.metadata.logo = plugin.path + "logo.png";
+            page.metadata.logo = logo;
             page.metadata.title = PREFIX;
             pageMenu(page);
             items = [];
@@ -82,7 +92,7 @@
             if (!service.tosaccepted) if (showtime.message(tos, true, true)) service.tosaccepted = 1;
             else page.error("TOS not accepted. plugin disabled");
             // p(v.toString())
-            page.metadata.title = new showtime.RichText(PREFIX + (/<title>(.*?)<\/title>/.exec(v)[1]));
+            page.metadata.title = new showtime.RichText((/<title>(.*?)<\/title>/.exec(v)[1]));
             //var re = /<div class='index show'[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
             //var re = /<div class='index show'[\S\s]+?data-newest='([^']+)[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g
             var re = /<div class='index show'[\S\s]+?data-newest='([^']+)[\S\s]+?href="\/([^"]+)[\S\s]+?original="\/([^"]+)[\S\s]+?icon-star[\S\s]+?([0-9]+(?:\.[0-9]*)?)[\S\s]+?title'>([^<]+)<br>(.+?)<[\S\s]+?<p>([^<]+)/g;
@@ -159,8 +169,10 @@
             var year = parseInt(match(/<div id='year'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1), 10);
             var rating = parseInt(match(/<div id='rating'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1), 10) * 10;
             var duration = parseInt(match(/<div id='length'[\S\s]+?([0-9]+(?:\.[0-9]*)?)/, v, 1), 10);
+            var genre = trim(match(/Жанры:<\/span>([\s\S]+?)</, v, 1));
             ////get_fanart(page,metadata.title)
             var icon = match(/id="poster" src="\/(.+?)"/, v, 1);
+            page.metadata.logo = BASE_URL + icon;
             //metadata.description = trim(match(/<div itemprop="description">[\S\s]+?(.+?)<div/,v));
             page.metadata.title = title + " (" + year + ")";
             //<a href="#1-3" class="episode" data-href="/shows/planet-earth/videos/2946" data-id="2946" data-time="null">№3 Fresh Water</a>
@@ -179,6 +191,7 @@
                         description: match(/plot'>([^<]+)/, m[i][5], 1) ? new showtime.RichText(match(/plot'>([^<]+)/, m[i][5], 1)) : '',
                         rating: rating,
                         duration: duration,
+                        genre: genre,
                         year: year
                     });
                     if (service.thetvdb) {
@@ -199,7 +212,7 @@
     });
     // Play links
     plugin.addURI(PREFIX + "play:(.*):(.*)", function(page, url, title) {
-        page.metadata.logo = plugin.path + "logo.png";
+        page.metadata.logo = logo;
         page.loading = false;
         page.type = "video";
         var s = unescape(title).split('|');
@@ -211,13 +224,13 @@
             episode: s[3],
             canonicalUrl: PREFIX + "play:" + url + ":" + title,
             sources: [{
-                url: video.url
+                url: video.url.replace('.webm', service.Format)
             }],
-            subtitles: [{
+            subtitles: service.subs === true ? ([{
                 url: video.sub,
                 language: 'English',
                 title: match(/subtitle\/.+?\/(.+)/, video.sub)
-            }]
+            }]) : ''
         };
         page.source = "videoparams:" + showtime.JSONEncode(videoparams);
     });
@@ -225,10 +238,9 @@
     function get_video_link(url) {
         var video = [];
         try {
-            var v = showtime.httpReq(BASE_URL + url);
-           // p(v.toString())
-            video.url = match(/video.tag.src = webm \? "\/(.+?)"/, v.toString(), 1) ? BASE_URL + match(/video.tag.src = webm \? "\/(.+?)"/, v.toString(), 1) : match(/video.tag.src = webm \? "(.+?)"/, v.toString(), 1);
-            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v.toString(), 1);
+            var v = showtime.httpReq(BASE_URL + url).toString();
+            video.url = match(/video.tag.src = webm \? "\/(.+?)"/, v, 1) ? BASE_URL + match(/video.tag.src = webm \? "\/(.+?)"/, v, 1) : match(/video.tag.src = webm \? "(.+?)"/, v, 1);
+            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v, 1);
         } catch (err) {
             e(err);
         }
