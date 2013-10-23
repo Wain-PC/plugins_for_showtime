@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.4.5
+//ver 0.4.6
 (function(plugin) {
     var PREFIX = 'ororo:';
     // bazovyj adress saita
@@ -239,8 +239,12 @@
         var video = [];
         try {
             var v = showtime.httpReq(BASE_URL + url).toString();
-            video.url = match(/video.tag.src = webm \? "\/(.+?)"/, v, 1) ? BASE_URL + match(/video.tag.src = webm \? "\/(.+?)"/, v, 1) : match(/video.tag.src = webm \? "(.+?)"/, v, 1);
-            video.sub = BASE_URL + match(/src: "\/(.+?)"/, v, 1);
+            t(v);
+            //p(v)
+            //video.url = match(/video.tag.src = webm \? "\/(.+?)"/, v, 1) ? BASE_URL + match(/video.tag.src = webm \? "\/(.+?)"/, v, 1) : match(/video.tag.src = webm \? "(.+?)"/, v, 1);
+            //video.sub = BASE_URL + match(/src: "\/(.+?)"/, v, 1);
+            video.url = match(/<source src='\/(.*?)' type='video/, v, 1) ? BASE_URL + match(/<source src='\/(.*?)' type='video/, v, 1) : match(/<source src='(.*?)' type='video/, v, 1);
+            video.sub = BASE_URL + match(/subtitles on' src='\/(.*)' srclang/, v, 1);
         } catch (err) {
             e(err);
         }
