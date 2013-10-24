@@ -1,0 +1,13 @@
+{
+	"id": "M3u_playlist",
+	"version": "0.1",
+	"type": "javascript",
+	"author": "Buksa",
+	"showtimeVersion": "4.3.257",
+	"title": "M3u_playlist",
+	"synopsis": "M3u_playlist - fignya kakaya",
+	"description":"<p>M3u_playlist - Showtime plugin is the integration of the M3u playlist into Showtime</p>",
+	"category": "video",
+	"icon": "logo.png",
+	"file": "M3u_playlist.js"
+}
