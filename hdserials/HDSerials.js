@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//ver 0.6.8 API
+//ver 0.6.9 API
 (function(plugin) {
     var PREFIX = 'HDSerials';
     var BASE_URL = 'http://hdserials.galanov.net';
@@ -174,7 +174,6 @@
                 video: id
             }
         }));
-        //showtime.print(showtime.JSONEncode(JSON))
         if (JSON.data.genres) {
             genres = "";
             for (i in JSON.data.genres) {
@@ -270,7 +269,8 @@
             }
         } else {
             v = url.match("video\/(.*?)\/iframe")[1];
-            var JSON = showtime.JSONDecode(showtime.httpReq('http://moonwalk.cc/sessions/create', {
+            //var JSON = showtime.JSONDecode(showtime.httpReq('http://moonwalk.cc/sessions/create', {
+            var JSON = showtime.JSONDecode(showtime.httpReq('http://moonwalk.cc/sessions/create_session', {
                 debug: true,
                 postdata: {
                     video_token: v
@@ -302,6 +302,11 @@
         showtime.trace(message, plugin.getDescriptor().id);
         showtime.print(message);
     }
+
+    function p(message) {
+        if (typeof(message) === 'object') message = showtime.JSONEncode(message);
+        showtime.print(message);
+    }
     // Add to RegExp prototype
     RegExp.prototype.execAll = function(string) {
         var matches = [];
@@ -321,10 +326,8 @@
     plugin.addSearcher(PREFIX + " - Videos", plugin.path + "logo.png", function(page, query) {
         try {
             var offset = 0;
-
             setPageHeader(page, query);
             var loader = function loader() {
-
                     var JSON = showtime.JSONDecode(showtime.httpReq(BASE_URL + '/backend/model.php', {
                         method: 'POST',
                         headers: {
@@ -347,8 +350,7 @@
                         page.entries++;
                     }
                     offset += 25;
-
-		    return !JSON.endOfData
+                    return !JSON.endOfData;
                 };
             loader();
             page.loading = false;
