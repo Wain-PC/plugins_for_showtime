@@ -1,0 +1,13 @@
+{
+	"id": "HDKinoteatr",
+	"version": "0.1",
+	"type": "javascript",
+	"author": "Wain",
+	"showtimeVersion": "4.3.567",
+	"title": "HDSerials",
+	"synopsis": "HDKinoteatr.ru",
+	"homepage": "https://github.com/Wain-PC",
+	"category": "video",
+	"icon": "img/logo.png",
+	"file": "hdk.js"
+}
