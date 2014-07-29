@@ -1,0 +1,13 @@
+{
+        "id": "iptv",
+        "version": "0.3",
+        "type": "javascript",
+        "author": "Wain",
+        "showtimeVersion": "4.1.257",
+        "title": "IPTV",
+        "synopsis": "Watch TV over IPTV",
+        "description":"<p>IPTV - Showtime plugin</p>",
+        "category": "video",
+        "icon": "logo.png",
+        "file": "iptv.js"
+}
